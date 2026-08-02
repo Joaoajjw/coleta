@@ -3,32 +3,19 @@
   functions = "netlify/functions"
   publish = "frontend"
 
-[functions]
-  node_bundler = "esbuild"
-
-# Redirecionamentos
+# Rotas
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
-# Rota para listar dados (opcional)
-[[redirects]]
-  from = "/listar"
+  from = "/api/coletar"
   to = "/.netlify/functions/coletar"
   status = 200
 
-# Fallback para SPA
+[[redirects]]
+  from = "/admin"
+  to = "/.netlify/functions/admin"
+  status = 200
+
+# Fallback
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-# Cabeçalhos de segurança
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    Referrer-Policy = "no-referrer-when-downgrade"
