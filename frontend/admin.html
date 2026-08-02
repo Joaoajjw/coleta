@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin • Poder da Imaginação</title>
+    <style>
+        /* ============================================================
+           RESET E BASE
+           ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital@0;1&display=swap');
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #14141e;
+            --bg-card: #1a1a2e;
+            --bg-card-hover: #22223a;
+            --text-primary: #f0ece4;
+            --text-secondary: #a8a0b8;
+            --text-muted: #6a6a82;
+            --accent: #c9b084;
+            --accent-hover: #d4c0a0;
+            --border: rgba(255,255,255,0.06);
+            --radius: 12px;
+            --shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* ============================================================
+           LAYOUT
+           ============================================================ */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* ============================================================
+           HEADER
+           ============================================================ */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-left .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            color: var(--accent);
+            font-style: italic;
+        }
+
+        .header-left .logo span {
+            color: var(--text-primary);
+            font-style: normal;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-right .badge {
+            font-size: 11px;
+            color: var(--text-muted);
+            background: var(--bg-card);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .header-right .logout {
+            font-size: 12px;
+            color: var(--text-muted);
+            background: none;
+            border: 1px solid var(--border);
+            padding: 6px 16px;
+            border-radius: 20px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .header-right .logout:hover {
+            background: var(--bg-card);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        /* ============================================================
+           LOGIN OVERLAY
+           ============================================================ */
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .login-overlay.hidden {
+            display: none;
+        }
+
+        .login-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 40px;
+            max-width: 380px;
+            width: 100%;
+            box-shadow: var(--shadow);
+        }
+
+        .login-box h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: 400;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .login-box p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            margin-bottom: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .login-box input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            color: #0a0a0f;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .login-box button:hover {
+            background: var(--accent-hover);
+        }
+
+        .login-box .error-msg {
+            color: #f87171;
+            font-size: 12px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .login-box .error-msg.visible {
+            display: block;
+        }
+
+        /* ============================================================
+           ESTATÍSTICAS
+           ============================================================ */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card .number {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ============================================================
+           LISTA DE COLETAS
+           ============================================================ */
+        .section-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title .count {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .coletas-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .coleta-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .coleta-item:hover {
+            background: var(--bg-card-hover);
+            border-color: rgba(255,255,255,0.08);
+        }
+
+        .coleta-item .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .coleta-item .row .left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .coleta-item .id {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .coleta-item .timestamp {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .coleta-item .localizacao {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .coleta-item .has-foto {
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            background: rgba(74, 222, 128, 0.1);
+            color: #4ade80;
+            border: 1px solid rgba(74, 222, 128, 0.15);
+        }
+
+        .coleta-item .no-foto {
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            background: rgba(248, 113, 113, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(248, 113, 113, 0.15);
+        }
+
+        .coleta-item .details {
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--text-muted);
+            display: none;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        .coleta-item .details.visible {
+            display: block;
+            animation: fadeSlideIn 0.3s ease;
+        }
+
+        .coleta-item .details .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+        }
+
+        .coleta-item .details .detail-row .label {
+            color: var(--text-muted);
+        }
+
+        .coleta-item .details .detail-row .value {
+            color: var(--text-secondary);
+            max-width: 60%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .coleta-item .toggle-details {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'Inter', sans-serif;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .coleta-item .toggle-details:hover {
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+        }
+
+        @keyframes fadeSlideIn {
+            0% { opacity: 0; transform: translateY(-4px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============================================================
+           LOADING / EMPTY
+           ============================================================ */
+        .loading-state, .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .empty-state .icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        /* ============================================================
+           RESPONSIVIDADE
+           ============================================================ */
+        @media (max-width: 600px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+            .coleta-item .row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .coleta-item .row .left {
+                width: 100%;
+            }
+        }
+
+        /* ============================================================
+           SCROLLBAR
+           ============================================================ */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--bg-card); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--bg-card-hover); }
+    </style>
+</head>
+<body>
+
+    <!-- ===== LOGIN OVERLAY ===== -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <h2>✦ Acesso Restrito</h2>
+            <p>Digite a senha para acessar o painel.</p>
+            <input type="password" id="senhaInput" placeholder="Senha..." autofocus>
+            <button id="loginBtn">Entrar</button>
+            <div class="error-msg" id="loginError">Senha incorreta. Tente novamente.</div>
+        </div>
+    </div>
+
+    <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+    <div class="container" id="mainContent" style="display:none;">
+
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-left">
+                <div class="logo">✦ Poder da <span>Imaginação</span></div>
+            </div>
+            <div class="header-right">
+                <span class="badge" id="totalColetas">0 coletas</span>
+                <button class="logout" id="logoutBtn">Sair</button>
+            </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="number" id="statTotal">0</div>
+                <div class="label">Total de Coletas</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="statComFoto">0</div>
+                <div class="label">Com Foto</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="statComLocal">0</div>
+                <div class="label">Com Localização</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="statHoje">0</div>
+                <div class="label">Hoje</div>
+            </div>
+        </div>
+
+        <!-- LISTA -->
+        <div class="section-title">
+            📋 Histórico de Coletas
+            <span class="count" id="countLabel">carregando...</span>
+        </div>
+
+        <div class="coletas-list" id="coletasList">
+            <div class="loading-state">⏳ Carregando dados...</div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    JAVASCRIPT -
