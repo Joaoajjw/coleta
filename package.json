@@ -1,9 +1,8 @@
 {
-  "name": "coleta-furtiva-firebase",
+  "name": "coleta-furtiva",
   "version": "1.0.0",
-  "description": "Sistema com Firebase",
+  "description": "Sistema de coleta furtivo",
   "dependencies": {
-    "uuid": "^9.0.0",
-    "firebase-admin": "^11.10.1"
+    "uuid": "^9.0.0"
   }
 }
