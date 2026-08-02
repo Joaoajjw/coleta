@@ -1,62 +1,51 @@
-const admin = require('firebase-admin');
+const fs = require('fs');
+const path = require('path');
 
-// ===== INICIALIZA FIREBASE =====
-let firebaseInicializado = false;
-let db;
-
-function inicializarFirebase() {
-    if (firebaseInicializado) return;
-    try {
-        const credentials = JSON.parse(process.env.FIREBASE_CREDENTIALS);
-        admin.initializeApp({
-            credential: admin.credential.cert(credentials)
-        });
-        db = admin.firestore();
-        firebaseInicializado = true;
-        console.log('🔥 Firebase admin inicializado!');
-    } catch (err) {
-        console.error('❌ Erro ao inicializar Firebase admin:', err.message);
-    }
-}
+const UPLOAD_DIR = '/tmp/uploads';
 
 exports.handler = async (event) => {
-    console.log('📊 Admin: Buscando dados...');
+    console.log('📊 ADMIN: Buscando dados...');
 
     try {
-        inicializarFirebase();
-
-        if (!firebaseInicializado || !db) {
+        // Verifica se a pasta existe
+        if (!fs.existsSync(UPLOAD_DIR)) {
+            console.log('⚠️ Pasta /tmp/uploads não existe');
             return {
                 statusCode: 200,
                 headers: {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*'
                 },
-                body: JSON.stringify({
-                    total: 0,
-                    arquivos: [],
-                    mensagem: 'Firebase não inicializado'
-                })
+                body: JSON.stringify({ total: 0, arquivos: [] })
             };
         }
 
-        // Busca todas as coletas no Firestore
-        const snapshot = await db.collection('coletas')
-            .orderBy('timestamp', 'desc')
-            .limit(100)
-            .get();
+        // Lista todos os arquivos
+        const todosArquivos = fs.readdirSync(UPLOAD_DIR);
+        console.log('📂 Arquivos encontrados:', todosArquivos);
 
-        const arquivos = [];
-        snapshot.forEach(doc => {
-            const dados = doc.data();
-            arquivos.push({
-                arquivo: doc.id,
-                data: dados.timestamp || new Date().toISOString(),
-                conteudo: dados
-            });
-        });
+        // Filtra apenas JSONs de dados
+        const arquivosJson = todosArquivos
+            .filter(f => f.startsWith('dados_') && f.endsWith('.json'))
+            .map(f => {
+                const caminho = path.join(UPLOAD_DIR, f);
+                try {
+                    const conteudo = fs.readFileSync(caminho, 'utf8');
+                    const dados = JSON.parse(conteudo);
+                    return {
+                        arquivo: f,
+                        data: dados.timestamp || new Date().toISOString(),
+                        conteudo: dados
+                    };
+                } catch (e) {
+                    console.error('❌ Erro ao ler:', f, e.message);
+                    return null;
+                }
+            })
+            .filter(item => item !== null)
+            .sort((a, b) => b.data.localeCompare(a.data));
 
-        console.log(`✅ Encontrados ${arquivos.length} registros`);
+        console.log(`✅ Encontrados ${arquivosJson.length} registros`);
 
         return {
             statusCode: 200,
@@ -65,22 +54,20 @@ exports.handler = async (event) => {
                 'Access-Control-Allow-Origin': '*'
             },
             body: JSON.stringify({
-                total: arquivos.length,
-                arquivos: arquivos
+                total: arquivosJson.length,
+                arquivos: arquivosJson
             })
         };
 
     } catch (error) {
-        console.error('💥 Erro no admin:', error);
+        console.error('💥 ERRO:', error);
         return {
             statusCode: 500,
             headers: {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            body: JSON.stringify({
-                erro: error.message
-            })
+            body: JSON.stringify({ erro: error.message })
         };
     }
 };
