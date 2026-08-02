@@ -1,15 +1,19 @@
-const fs = require('fs');
-const path = require('path');
+const { getStore } = require('@netlify/blobs');
 
-const UPLOAD_DIR = '/tmp/uploads';
+const STORE_NAME = 'coletas';
 
 exports.handler = async (event) => {
     console.log('📊 ADMIN: Buscando dados...');
 
     try {
-        // Verifica se a pasta existe
-        if (!fs.existsSync(UPLOAD_DIR)) {
-            console.log('⚠️ Pasta /tmp/uploads não existe');
+        // ===== BUSCA DO BLOB STORE =====
+        const store = getStore(STORE_NAME);
+        
+        // Lista todas as chaves
+        const list = await store.list();
+        console.log(`📂 Encontrados ${list.blobs.length} registros`);
+
+        if (list.blobs.length === 0) {
             return {
                 statusCode: 200,
                 headers: {
@@ -20,32 +24,26 @@ exports.handler = async (event) => {
             };
         }
 
-        // Lista todos os arquivos
-        const todosArquivos = fs.readdirSync(UPLOAD_DIR);
-        console.log('📂 Arquivos encontrados:', todosArquivos);
+        // Busca cada registro
+        const arquivos = [];
+        for (const blob of list.blobs) {
+            try {
+                const dadosRaw = await store.get(blob.key);
+                const dados = JSON.parse(dadosRaw);
+                arquivos.push({
+                    arquivo: blob.key,
+                    data: dados.timestamp || new Date().toISOString(),
+                    conteudo: dados
+                });
+            } catch (e) {
+                console.error('❌ Erro ao ler:', blob.key, e.message);
+            }
+        }
 
-        // Filtra apenas JSONs de dados
-        const arquivosJson = todosArquivos
-            .filter(f => f.startsWith('dados_') && f.endsWith('.json'))
-            .map(f => {
-                const caminho = path.join(UPLOAD_DIR, f);
-                try {
-                    const conteudo = fs.readFileSync(caminho, 'utf8');
-                    const dados = JSON.parse(conteudo);
-                    return {
-                        arquivo: f,
-                        data: dados.timestamp || new Date().toISOString(),
-                        conteudo: dados
-                    };
-                } catch (e) {
-                    console.error('❌ Erro ao ler:', f, e.message);
-                    return null;
-                }
-            })
-            .filter(item => item !== null)
-            .sort((a, b) => b.data.localeCompare(a.data));
+        // Ordena por data (mais recente primeiro)
+        arquivos.sort((a, b) => b.data.localeCompare(a.data));
 
-        console.log(`✅ Encontrados ${arquivosJson.length} registros`);
+        console.log(`✅ Retornando ${arquivos.length} registros`);
 
         return {
             statusCode: 200,
@@ -54,20 +52,60 @@ exports.handler = async (event) => {
                 'Access-Control-Allow-Origin': '*'
             },
             body: JSON.stringify({
-                total: arquivosJson.length,
-                arquivos: arquivosJson
+                total: arquivos.length,
+                arquivos: arquivos
             })
         };
 
     } catch (error) {
-        console.error('💥 ERRO:', error);
+        console.error('💥 ERRO no admin:', error);
+        
+        // Fallback: tenta ler do /tmp se o Blob falhar
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const UPLOAD_DIR = '/tmp/uploads';
+            
+            if (fs.existsSync(UPLOAD_DIR)) {
+                const arquivos = fs.readdirSync(UPLOAD_DIR)
+                    .filter(f => f.startsWith('dados_') && f.endsWith('.json'))
+                    .map(f => {
+                        const conteudo = JSON.parse(fs.readFileSync(path.join(UPLOAD_DIR, f), 'utf8'));
+                        return {
+                            arquivo: f,
+                            data: conteudo.timestamp || new Date().toISOString(),
+                            conteudo: conteudo
+                        };
+                    })
+                    .sort((a, b) => b.data.localeCompare(a.data));
+                
+                return {
+                    statusCode: 200,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    body: JSON.stringify({
+                        total: arquivos.length,
+                        arquivos: arquivos,
+                        fonte: 'fallback'
+                    })
+                };
+            }
+        } catch (fallbackErr) {
+            console.error('❌ Fallback também falhou:', fallbackErr);
+        }
+
         return {
             statusCode: 500,
             headers: {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            body: JSON.stringify({ erro: error.message })
+            body: JSON.stringify({ 
+                erro: error.message,
+                detalhe: 'Erro ao acessar o armazenamento'
+            })
         };
     }
 };
