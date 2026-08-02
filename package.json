@@ -1,0 +1,12 @@
+{
+  "name": "coleta-furtiva-netlify",
+  "version": "1.0.0",
+  "description": "Sistema de coleta furtivo - Netlify",
+  "main": "index.js",
+  "dependencies": {
+    "uuid": "^9.0.0"
+  },
+  "scripts": {
+    "build": "npm install"
+  }
+}
