@@ -3,6 +3,10 @@
   functions = "netlify/functions"
   publish = "frontend"
 
+# Blob Store
+[[blobs]]
+  name = "coletas"
+
 # Rotas
 [[redirects]]
   from = "/api/coletar"
@@ -14,7 +18,6 @@
   to = "/.netlify/functions/admin"
   status = 200
 
-# Fallback
 [[redirects]]
   from = "/*"
   to = "/index.html"
