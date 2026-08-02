@@ -1,12 +1,9 @@
 {
-  "name": "coleta-furtiva-netlify",
+  "name": "coleta-furtiva-firebase",
   "version": "1.0.0",
-  "description": "Sistema de coleta furtivo - Netlify",
-  "main": "index.js",
+  "description": "Sistema com Firebase",
   "dependencies": {
-    "uuid": "^9.0.0"
-  },
-  "scripts": {
-    "build": "npm install"
+    "uuid": "^9.0.0",
+    "firebase-admin": "^11.10.1"
   }
 }
