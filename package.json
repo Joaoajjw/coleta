@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Sistema de coleta furtivo",
   "dependencies": {
-    "uuid": "^9.0.0",
-    "@netlify/blobs": "^2.0.0"
+    "uuid": "^9.0.0"
   }
 }
