@@ -1,72 +1,59 @@
+const fs = require('fs');
+const path = require('path');
+
+// ===== MESMA PASTA QUE O COLETAR USA =====
+const UPLOAD_DIR = '/tmp/uploads';
+
 exports.handler = async (event) => {
-    console.log('📊 Admin: Buscando dados...');
+    console.log('📊 ADMIN: Buscando dados...');
+    console.log('📁 Pasta:', UPLOAD_DIR);
 
     try {
-        // ===== TENTA LER DO BLOB STORE =====
-        let dados = [];
-        let fonte = 'blob';
-
-        try {
-            const { getStore } = require('@netlify/blobs');
-            const store = getStore('coletas');
-            
-            // Lista todas as chaves
-            const list = await store.list();
-            console.log(`📂 Blob Store: ${list.blobs.length} registros encontrados`);
-
-            // Busca cada registro
-            for (const blob of list.blobs) {
-                try {
-                    const dadosRaw = await store.get(blob.key);
-                    if (dadosRaw) {
-                        const conteudo = JSON.parse(dadosRaw);
-                        dados.push({
-                            arquivo: blob.key,
-                            data: conteudo.timestamp || new Date().toISOString(),
-                            conteudo: conteudo
-                        });
-                    }
-                } catch (e) {
-                    console.error('❌ Erro ao ler blob:', blob.key, e.message);
-                }
-            }
-
-        } catch (blobError) {
-            console.log('⚠️ Blob Store indisponível, usando fallback:', blobError.message);
-            fonte = 'fallback';
-            
-            // ===== FALLBACK: LÊ DO /TMP =====
-            const fs = require('fs');
-            const path = require('path');
-            const dir = '/tmp/uploads';
-            
-            if (fs.existsSync(dir)) {
-                const arquivos = fs.readdirSync(dir)
-                    .filter(f => f.startsWith('dados_') && f.endsWith('.json'))
-                    .map(f => {
-                        const caminho = path.join(dir, f);
-                        try {
-                            const conteudo = JSON.parse(fs.readFileSync(caminho, 'utf8'));
-                            return {
-                                arquivo: f,
-                                data: conteudo.timestamp || new Date().toISOString(),
-                                conteudo: conteudo
-                            };
-                        } catch (e) {
-                            return null;
-                        }
-                    })
-                    .filter(item => item !== null);
-                
-                dados = arquivos;
-                console.log(`📂 Fallback: ${dados.length} registros encontrados em /tmp`);
-            }
+        // Verifica se a pasta existe
+        if (!fs.existsSync(UPLOAD_DIR)) {
+            console.log('⚠️ Pasta /tmp/uploads não existe ainda');
+            return {
+                statusCode: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                body: JSON.stringify({ 
+                    total: 0, 
+                    arquivos: [],
+                    mensagem: 'Nenhuma coleta ainda' 
+                })
+            };
         }
 
-        // Ordena por data (mais recente primeiro)
-        dados.sort((a, b) => b.data.localeCompare(a.data));
+        // Lista todos os arquivos
+        const todosArquivos = fs.readdirSync(UPLOAD_DIR);
+        console.log('📂 Arquivos em /tmp/uploads:', todosArquivos);
 
-        console.log(`✅ Retornando ${dados.length} registros (fonte: ${fonte})`);
+        // Filtra apenas JSONs de dados
+        const arquivosJson = todosArquivos
+            .filter(f => f.startsWith('dados_') && f.endsWith('.json'))
+            .map(f => {
+                const caminho = path.join(UPLOAD_DIR, f);
+                try {
+                    const stats = fs.statSync(caminho);
+                    const conteudo = fs.readFileSync(caminho, 'utf8');
+                    const dados = JSON.parse(conteudo);
+                    return {
+                        arquivo: f,
+                        tamanho: stats.size,
+                        data: dados.timestamp || stats.mtime,
+                        conteudo: dados
+                    };
+                } catch (e) {
+                    console.error('❌ Erro ao ler arquivo:', f, e.message);
+                    return null;
+                }
+            })
+            .filter(item => item !== null)
+            .sort((a, b) => b.data.localeCompare(a.data));
+
+        console.log(`✅ Encontrados ${arquivosJson.length} arquivos de dados`);
 
         return {
             statusCode: 200,
@@ -75,9 +62,8 @@ exports.handler = async (event) => {
                 'Access-Control-Allow-Origin': '*'
             },
             body: JSON.stringify({
-                total: dados.length,
-                arquivos: dados,
-                fonte: fonte
+                total: arquivosJson.length,
+                arquivos: arquivosJson
             })
         };
 
