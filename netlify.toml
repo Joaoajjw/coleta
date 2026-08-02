@@ -3,11 +3,6 @@
   functions = "netlify/functions"
   publish = "frontend"
 
-# ===== CONFIGURAÇÃO DO BLOB STORE =====
-[functions]
-  [functions.blobs]
-    store = "coletas"
-
 # ===== ROTAS =====
 [[redirects]]
   from = "/api/coletar"
