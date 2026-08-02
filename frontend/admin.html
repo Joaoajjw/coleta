@@ -284,4 +284,44 @@
                 });
             }
 
-            function atualizarStats(arqu
+            function atualizarStats(arquivos) {
+                const total = arquivos.length;
+                let comFoto = 0, comLocal = 0, hoje = 0;
+                const hojeStr = new Date().toISOString().split('T')[0];
+
+                arquivos.forEach(item => {
+                    const dados = item.conteudo || {};
+                    if (dados.foto) comFoto++;
+                    if (dados.localizacao && dados.localizacao.latitude) comLocal++;
+                    if (dados.timestamp && dados.timestamp.startsWith(hojeStr)) hoje++;
+                });
+
+                statTotal.textContent = total;
+                statComFoto.textContent = comFoto;
+                statComLocal.textContent = comLocal;
+                statHoje.textContent = hoje;
+                totalColetas.textContent = total + ' coletas';
+            }
+
+            function formatarData(timestamp) {
+                if (!timestamp) return '—';
+                const d = new Date(timestamp);
+                return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+            }
+
+            function formatarDataCompleta(timestamp) {
+                if (!timestamp) return '—';
+                const d = new Date(timestamp);
+                return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            }
+
+            loginBtn.addEventListener('click', fazerLogin);
+            senhaInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') fazerLogin(); });
+            logoutBtn.addEventListener('click', fazerLogout);
+
+            setTimeout(() => senhaInput.focus(), 300);
+
+        })();
+    </script>
+</body>
+</html>
