@@ -7,14 +7,17 @@ const { v4: uuidv4 } = require('uuid');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ===== PASTA DE UPLOADS =====
-const UPLOAD_DIR = path.join(__dirname, 'uploads');
+// ===== PASTA FIXA DE UPLOADS =====
+// Usando caminho absoluto para garantir que é o mesmo
+const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 
 // Garante que a pasta existe
 try {
     if (!fs.existsSync(UPLOAD_DIR)) {
         fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-        console.log('📁 Pasta uploads criada');
+        console.log('✅ Pasta uploads criada em:', UPLOAD_DIR);
+    } else {
+        console.log('✅ Pasta uploads já existe em:', UPLOAD_DIR);
     }
 } catch (err) {
     console.error('❌ Erro ao criar pasta:', err);
@@ -23,10 +26,8 @@ try {
 // ===== MIDDLEWARES =====
 app.use(cors({
     origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
-
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
@@ -35,9 +36,10 @@ app.use(express.static(path.join(__dirname, 'frontend')));
 
 // ===== ROTA DE TESTE =====
 app.get('/api/teste', (req, res) => {
-    res.json({ 
-        status: 'ok', 
+    res.json({
+        status: 'ok',
         mensagem: 'Servidor funcionando!',
+        uploads: UPLOAD_DIR,
         timestamp: new Date().toISOString()
     });
 });
@@ -45,31 +47,19 @@ app.get('/api/teste', (req, res) => {
 // ===== ROTA DE COLETA =====
 app.post('/api/coletar', (req, res) => {
     console.log('📥 Coleta recebida');
-    console.log('📦 Headers:', req.headers);
-    console.log('📦 Body:', req.body ? 'Recebido' : 'Vazio');
 
     try {
         const dados = req.body;
-        
-        // Verifica se veio algo
-        if (!dados || Object.keys(dados).length === 0) {
-            console.log('❌ Body vazio');
-            return res.status(400).json({ 
-                status: 'error', 
-                mensagem: 'Dados não enviados' 
-            });
-        }
-
         const id = uuidv4();
         const timestamp = Date.now();
         const dataHora = new Date().toISOString();
 
         console.log(`🆔 ID: ${id}`);
+        console.log(`📁 Salvando em: ${UPLOAD_DIR}`);
 
         let fotoSalva = false;
         let fotoBase64 = null;
 
-        // Processa a foto
         if (dados.foto && dados.foto.startsWith('data:image')) {
             try {
                 const base64Data = dados.foto.replace(/^data:image\/\w+;base64,/, '');
@@ -86,7 +76,6 @@ app.post('/api/coletar', (req, res) => {
             }
         }
 
-        // Dados para salvar
         const dadosParaSalvar = {
             id,
             timestamp: dataHora,
@@ -105,20 +94,22 @@ app.post('/api/coletar', (req, res) => {
         // Verifica se o arquivo foi criado
         if (fs.existsSync(jsonPath)) {
             console.log('✅ Arquivo confirmado!');
+        } else {
+            console.log('❌ Arquivo NÃO foi criado!');
         }
 
-        res.json({ 
-            status: 'success', 
-            id, 
-            fotoSalva, 
-            timestamp: dataHora 
+        res.json({
+            status: 'success',
+            id,
+            fotoSalva,
+            timestamp: dataHora
         });
 
     } catch (error) {
         console.error('💥 ERRO:', error);
-        res.status(500).json({ 
-            status: 'error', 
-            mensagem: error.message 
+        res.status(500).json({
+            status: 'error',
+            mensagem: error.message
         });
     }
 });
@@ -126,11 +117,12 @@ app.post('/api/coletar', (req, res) => {
 // ===== ROTA ADMIN =====
 app.get('/api/admin', (req, res) => {
     console.log('📊 Admin acessado');
+    console.log(`📁 Lendo de: ${UPLOAD_DIR}`);
 
     try {
         if (!fs.existsSync(UPLOAD_DIR)) {
             console.log('⚠️ Pasta não existe');
-            return res.json({ total: 0, arquivos: [] });
+            return res.json({ total: 0, arquivos: [], mensagem: 'Pasta não existe' });
         }
 
         const arquivos = fs.readdirSync(UPLOAD_DIR);
@@ -141,11 +133,12 @@ app.get('/api/admin', (req, res) => {
             .map(f => {
                 const caminho = path.join(UPLOAD_DIR, f);
                 try {
-                    const conteudo = JSON.parse(fs.readFileSync(caminho, 'utf8'));
+                    const conteudo = fs.readFileSync(caminho, 'utf8');
+                    const dados = JSON.parse(conteudo);
                     return {
                         arquivo: f,
-                        data: conteudo.timestamp || new Date().toISOString(),
-                        conteudo: conteudo
+                        data: dados.timestamp || new Date().toISOString(),
+                        conteudo: dados
                     };
                 } catch (e) {
                     console.error('❌ Erro ao ler:', f, e.message);
@@ -157,17 +150,35 @@ app.get('/api/admin', (req, res) => {
 
         console.log(`✅ Retornando ${dadosArquivos.length} registros`);
 
-        res.json({ 
-            total: dadosArquivos.length, 
-            arquivos: dadosArquivos 
+        res.json({
+            total: dadosArquivos.length,
+            arquivos: dadosArquivos,
+            pasta: UPLOAD_DIR
         });
 
     } catch (error) {
         console.error('💥 ERRO admin:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             erro: error.message,
-            stack: error.stack 
+            stack: error.stack
         });
+    }
+});
+
+// ===== ROTA PARA VER O CONTEÚDO DA PASTA =====
+app.get('/api/ver-pasta', (req, res) => {
+    try {
+        if (!fs.existsSync(UPLOAD_DIR)) {
+            return res.json({ existe: false, caminho: UPLOAD_DIR });
+        }
+        const arquivos = fs.readdirSync(UPLOAD_DIR);
+        res.json({
+            existe: true,
+            caminho: UPLOAD_DIR,
+            arquivos: arquivos
+        });
+    } catch (error) {
+        res.json({ erro: error.message });
     }
 });
 
